@@ -51,7 +51,23 @@ Barbearia/
 
 ## Como rodar
 
-### Opção 0 — Colocar online (GitHub + Render)
+### Opção 0 — Colocar online (Railway — recomendado)
+
+Projeto no ar em:
+
+| Serviço | URL |
+|---------|-----|
+| **Site** | https://web-production-54fa.up.railway.app |
+| **Login cliente** | https://web-production-54fa.up.railway.app/portal/login |
+| **Login admin** | https://web-production-54fa.up.railway.app/login |
+| **API** | https://api-production-a3e3.up.railway.app |
+| **Swagger** | https://api-production-a3e3.up.railway.app/swagger-ui.html |
+
+Painel: [Railway project](https://railway.com/project/a8bea42d-b5ce-464d-81dd-2d53fb3f72fb)
+
+Para atualizar: faça deploy de novo com a CLI (`railway up`) ou conecte o GitHub no serviço (Deploy → Source).
+
+### Opção 0b — Render (alternativa)
 
 O GitHub guarda o código; o site fica no ar pelo **Render** (deploy automático a cada `git push`).
 
