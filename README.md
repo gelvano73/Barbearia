@@ -62,9 +62,9 @@ O GitHub guarda o código; o site fica no ar pelo **Render** (deploy automático
 
 | Serviço | URL típica |
 |---------|------------|
-| Site (cliente/admin) | `https://barbearia-web.onrender.com` |
-| Login cliente | `https://barbearia-web.onrender.com/portal/login` |
-| API | `https://barbearia-api.onrender.com` |
+| Site (cliente/admin) | `https://barbearia-saas-web.onrender.com` |
+| Login cliente | `https://barbearia-saas-web.onrender.com/portal/login` |
+| API | `https://barbearia-saas-api.onrender.com` |
 
 Se o CORS falhar, em **barbearia-api → Environment** ajuste `CORS_ALLOWED_ORIGINS` para a URL real do frontend.
 
