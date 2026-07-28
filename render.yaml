@@ -1,15 +1,14 @@
-# Deploy automático a partir do GitHub no Render:
-# 1) Crie conta em https://render.com
-# 2) Dashboard → New → Blueprint → conecte o repo gelvano73/Barbearia
-# 3) Aplique este arquivo (render.yaml)
+# Blueprint Render — deploy a partir do GitHub
+# https://dashboard.render.com/blueprints
 #
-# URLs esperadas (podem variar levemente na conta):
-#   API:  https://barbearia-api.onrender.com
+# URLs típicas após o deploy:
 #   Site: https://barbearia-web.onrender.com
+#   API:  https://barbearia-api.onrender.com
 
 databases:
   - name: barbearia-db
     plan: free
+    postgresMajorVersion: "16"
 
 services:
   - type: web
@@ -40,16 +39,12 @@ services:
 
   - type: web
     name: barbearia-web
-    runtime: static
+    runtime: docker
     plan: free
     region: oregon
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
-    rootDir: frontend
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
     envVars:
+      # Render injeta env vars também como build-args do Docker
       - key: VITE_API_URL
         value: https://barbearia-api.onrender.com/api
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
