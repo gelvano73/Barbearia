@@ -51,7 +51,24 @@ Barbearia/
 
 ## Como rodar
 
-### Opção 1 — Docker Compose (recomendado)
+### Opção 0 — Colocar online (GitHub + Render)
+
+O GitHub guarda o código; o site fica no ar pelo **Render** (deploy automático a cada `git push`).
+
+1. Conta em [render.com](https://render.com) (login com GitHub)
+2. **New → Blueprint** → selecione o repositório `Barbearia`
+3. Confirme o `render.yaml` e clique em **Apply**
+4. Aguarde o build (o plano free pode levar alguns minutos e “dormir” após inatividade)
+
+| Serviço | URL típica |
+|---------|------------|
+| Site (cliente/admin) | `https://barbearia-web.onrender.com` |
+| Login cliente | `https://barbearia-web.onrender.com/portal/login` |
+| API | `https://barbearia-api.onrender.com` |
+
+Se o CORS falhar, em **barbearia-api → Environment** ajuste `CORS_ALLOWED_ORIGINS` para a URL real do frontend.
+
+### Opção 1 — Docker Compose (recomendado localmente)
 
 ```bash
 docker compose up --build
