@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -143,7 +143,7 @@ button {
   font-size: 0.85rem;
 }
 
-/* === Conteúdo principal === */
+/* === ConteÃºdo principal === */
 .main {
   min-height: 0;
   height: 100%;
@@ -182,7 +182,7 @@ button {
   display: none;
 }
 
-/* === Cabeçalho de página === */
+/* === CabeÃ§alho de pÃ¡gina === */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -206,7 +206,7 @@ button {
   font-size: 0.9rem;
 }
 
-/* === Painéis e tabelas === */
+/* === PainÃ©is e tabelas === */
 .panel {
   background: linear-gradient(180deg, rgba(36, 31, 25, 0.95), rgba(28, 24, 20, 0.92));
   border: 1px solid var(--line);
@@ -245,7 +245,7 @@ button {
   letter-spacing: 0.06em;
 }
 
-/* === Botões === */
+/* === BotÃµes === */
 .btn {
   border: none;
   border-radius: 10px;
@@ -285,7 +285,7 @@ button {
   font-size: 0.85rem;
 }
 
-/* === Formulários === */
+/* === FormulÃ¡rios === */
 .form-grid {
   display: grid;
   gap: 0.9rem;
@@ -373,7 +373,7 @@ input:focus, select:focus, textarea:focus {
 .badge.warn { color: var(--brass); border-color: rgba(201, 162, 39, 0.4); }
 .badge.danger { color: var(--danger); border-color: rgba(196, 92, 74, 0.4); }
 
-/* === Autenticação === */
+/* === AutenticaÃ§Ã£o === */
 .auth-page {
   min-height: 100vh;
   display: grid;
@@ -459,7 +459,7 @@ input:focus, select:focus, textarea:focus {
   flex-wrap: wrap;
 }
 
-/* === Slots de horário === */
+/* === Slots de horÃ¡rio === */
 .slot-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
@@ -486,7 +486,7 @@ input:focus, select:focus, textarea:focus {
   color: #ffe9a8;
 }
 
-/* === Confirmação === */
+/* === ConfirmaÃ§Ã£o === */
 .confirm-box {
   border: 1px solid rgba(201, 162, 39, 0.35);
   background: rgba(201, 162, 39, 0.1);
@@ -499,7 +499,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--muted);
 }
 
-/* === Animações === */
+/* === AnimaÃ§Ãµes === */
 @keyframes rise {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -663,7 +663,7 @@ label.btn.is-disabled {
   pointer-events: none;
 }
 
-/* === Política de Privacidade / páginas legais === */
+/* === PolÃ­tica de Privacidade / pÃ¡ginas legais === */
 .legal-page {
   height: 100dvh;
   overflow-y: auto;
@@ -883,11 +883,12 @@ label.btn.is-disabled {
   overflow: hidden;
 }
 
-/* === Responsivo === */
-@media (max-width: 900px) {
+/* === Responsivo (tablet + celular) === */
+@media (max-width: 1024px) {
   html, body, #root {
     height: 100%;
     max-height: 100%;
+    overflow-x: hidden;
   }
 
   body {
@@ -898,9 +899,10 @@ label.btn.is-disabled {
     overflow: hidden;
   }
 
+  /* Flex evita que sidebar/backdrop fixos ocupem células do grid */
   .app-shell {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    display: flex;
+    flex-direction: column;
     height: 100dvh;
     max-height: 100dvh;
     overflow: hidden;
@@ -911,10 +913,15 @@ label.btn.is-disabled {
     align-items: center;
     gap: 0.75rem;
     padding: 0.65rem 0.85rem;
+    padding-top: max(0.65rem, env(safe-area-inset-top));
+    padding-left: max(0.85rem, env(safe-area-inset-left));
+    padding-right: max(0.85rem, env(safe-area-inset-right));
     border-bottom: 1px solid var(--line);
-    background: rgba(18, 16, 14, 0.92);
-    backdrop-filter: blur(10px);
-    z-index: 30;
+    background: rgba(18, 16, 14, 0.94);
+    backdrop-filter: blur(12px);
+    z-index: 60;
+    flex-shrink: 0;
+    position: relative;
   }
 
   .mobile-topbar-brand {
@@ -922,6 +929,7 @@ label.btn.is-disabled {
     flex-direction: column;
     line-height: 1.1;
     min-width: 0;
+    overflow: hidden;
   }
 
   .mobile-topbar-brand strong {
@@ -929,6 +937,9 @@ label.btn.is-disabled {
     font-size: 1.35rem;
     letter-spacing: 0.06em;
     color: var(--brass);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .mobile-topbar-brand span {
@@ -936,6 +947,9 @@ label.btn.is-disabled {
     font-size: 0.72rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .menu-toggle {
@@ -943,9 +957,9 @@ label.btn.is-disabled {
     flex-direction: column;
     justify-content: center;
     gap: 5px;
-    width: 42px;
-    height: 42px;
-    padding: 10px;
+    width: 44px;
+    height: 44px;
+    padding: 11px;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.25);
@@ -977,7 +991,13 @@ label.btn.is-disabled {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
+    width: auto;
+    height: auto;
+    flex: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(0, 0, 0, 0.58);
     z-index: 40;
     opacity: 0;
     pointer-events: none;
@@ -994,13 +1014,22 @@ label.btn.is-disabled {
     top: 0;
     left: 0;
     bottom: 0;
-    width: min(300px, 86vw);
+    width: min(320px, 88vw);
+    max-width: 100%;
     z-index: 50;
+    flex: none;
+    margin: 0;
     border-right: 1px solid var(--line);
     border-bottom: none;
+    /* Deixa a topbar (hamburger) sempre acessível acima do drawer */
+    padding:
+      calc(3.6rem + env(safe-area-inset-top, 0px))
+      0.9rem
+      max(1rem, env(safe-area-inset-bottom))
+      max(0.9rem, env(safe-area-inset-left));
     transform: translateX(-105%);
     transition: transform 0.28s ease;
-    background: rgba(18, 16, 14, 0.97);
+    background: rgba(18, 16, 14, 0.98);
     box-shadow: var(--shadow);
     overflow: hidden;
   }
@@ -1009,29 +1038,45 @@ label.btn.is-disabled {
     transform: translateX(0);
   }
 
+  /* Marca já aparece na topbar — evita duplicar no drawer */
+  .sidebar-head .brand {
+    display: none;
+  }
+
+  .sidebar-head {
+    display: none;
+  }
+
   .menu-close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--muted);
-    font-size: 1rem;
-    flex-shrink: 0;
+    display: none;
   }
 
   .nav {
     flex-direction: column;
     flex-wrap: nowrap;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.2rem;
+    padding-bottom: 0.5rem;
   }
 
   .nav a {
-    padding: 0.7rem 0.85rem;
-    font-size: 0.95rem;
+    display: block;
+    padding: 0.78rem 0.9rem;
+    min-height: 44px;
+    font-size: 0.98rem;
+    border-radius: 10px;
+  }
+
+  .sidebar-footer {
+    border-top: 1px solid var(--line);
+    padding-top: 0.75rem;
+    gap: 0.65rem;
+  }
+
+  .sidebar-footer .btn {
+    width: 100%;
   }
 
   .form-grid {
@@ -1039,11 +1084,15 @@ label.btn.is-disabled {
   }
 
   .main {
-    grid-row: 2;
-    height: auto;
+    flex: 1 1 auto;
+    width: 100%;
     min-height: 0;
+    height: auto;
     overflow: auto;
     padding: 0.85rem;
+    padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+    padding-left: max(0.85rem, env(safe-area-inset-left));
+    padding-right: max(0.85rem, env(safe-area-inset-right));
     gap: 0.7rem;
     -webkit-overflow-scrolling: touch;
   }
@@ -1073,8 +1122,21 @@ label.btn.is-disabled {
     font-size: 0.85rem;
   }
 
-  .page-header .btn {
+  .page-header .btn,
+  .page-header .actions-row .btn {
     width: 100%;
+  }
+
+  .page-header .actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .page-header .actions-row .btn:only-child,
+  .page-header .actions-row .btn:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   .actions-row {
@@ -1085,6 +1147,7 @@ label.btn.is-disabled {
     width: min(100%, 100%);
     max-height: 90dvh;
     padding: 1rem;
+    margin: 0.5rem;
   }
 
   .auth-card {
@@ -1096,8 +1159,8 @@ label.btn.is-disabled {
     height: 100dvh;
     overflow-y: auto;
     align-items: start;
-    padding-top: 1.5rem;
-    padding-bottom: 2rem;
+    padding: 1.25rem 0.85rem 2rem;
+    padding-top: max(1.25rem, env(safe-area-inset-top));
   }
 
   .legal-page {
@@ -1127,10 +1190,22 @@ label.btn.is-disabled {
     animation: none;
   }
 
+  .dashboard-shortcuts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
   .dashboard-chip {
-    flex: 1 1 calc(50% - 0.55rem);
+    flex: unset;
+    width: 100%;
     justify-content: center;
     text-align: center;
+  }
+
+  .slot-grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   }
 }
 
@@ -1152,5 +1227,17 @@ label.btn.is-disabled {
 
   .page-header h1 {
     font-size: 1.5rem;
+  }
+
+  .page-header .actions-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-topbar-brand strong {
+    font-size: 1.2rem;
+  }
+
+  .dashboard-chip {
+    flex: 1 1 100%;
   }
 }

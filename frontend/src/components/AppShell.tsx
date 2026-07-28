@@ -5,6 +5,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 
+const MOBILE_MQ = '(max-width: 1024px)'
+
 type AppShellProps = {
   brandTitle: string
   brandSubtitle: string
@@ -15,32 +17,59 @@ type AppShellProps = {
 
 export default function AppShell({ brandTitle, brandSubtitle, nav, footer, children }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(MOBILE_MQ).matches : false,
+  )
   const location = useLocation()
+
+  // Acompanha breakpoint (desktop ↔ mobile)
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_MQ)
+    const onChange = () => {
+      setIsMobile(mq.matches)
+      if (!mq.matches) setMenuOpen(false)
+    }
+    onChange()
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
 
   // Fecha o drawer ao navegar (mobile)
   useEffect(() => {
     setMenuOpen(false)
   }, [location.pathname])
 
+  // Esc fecha o menu
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [menuOpen])
+
   // Trava o scroll do body quando o menu está aberto em telas pequenas
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 900px)')
-    if (menuOpen && mq.matches) {
+    if (menuOpen && isMobile) {
       document.body.classList.add('nav-open')
     } else {
       document.body.classList.remove('nav-open')
     }
     return () => document.body.classList.remove('nav-open')
-  }, [menuOpen])
+  }, [menuOpen, isMobile])
+
+  const drawerHidden = isMobile && !menuOpen
 
   return (
-    <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
+    <div className={`app-shell ${menuOpen ? 'menu-open' : ''} ${isMobile ? 'is-mobile' : ''}`}>
       <header className="mobile-topbar">
         <button
           type="button"
           className="menu-toggle"
           aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
           aria-expanded={menuOpen}
+          aria-controls="app-sidebar"
           onClick={() => setMenuOpen((v) => !v)}
         >
           <span />
@@ -60,25 +89,23 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
         aria-hidden={!menuOpen}
       />
 
-      <aside className="sidebar" aria-hidden={false}>
+      <aside
+        id="app-sidebar"
+        className="sidebar"
+        aria-hidden={drawerHidden}
+      >
         <div className="sidebar-head">
           <div className="brand">
             {brandTitle}
             <span>{brandSubtitle}</span>
           </div>
-          <button
-            type="button"
-            className="menu-close"
-            aria-label="Fechar menu"
-            onClick={() => setMenuOpen(false)}
-          >
-            ✕
-          </button>
         </div>
-        <nav className="nav" onClick={(e) => {
-          // Fecha ao clicar em um link
-          if ((e.target as HTMLElement).closest('a')) setMenuOpen(false)
-        }}>
+        <nav
+          className="nav"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('a')) setMenuOpen(false)
+          }}
+        >
           {nav}
         </nav>
         <div className="sidebar-footer">{footer}</div>
