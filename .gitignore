@@ -1,0 +1,31 @@
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Backend
+backend/target/
+backend/data/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Env / secrets
+.env
+.env.local
+*.log
+
+# Uploads / backups / logs
+backend/uploads/
+uploads/
+backend/backups/
+backups/
+backend/logs/
+logs/
+
+# Docker
+postgres_data/
