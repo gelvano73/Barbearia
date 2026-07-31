@@ -70,9 +70,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
+                // Âncora só em filtros nativos do Spring Security (custom filters não têm order registrado).
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(assinaturaGuardFilter, JwtAuthenticationFilter.class);
+                .addFilterAfter(assinaturaGuardFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
