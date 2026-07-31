@@ -1,6 +1,7 @@
 package com.barbearia.saas.service;
 
 import com.barbearia.saas.config.BackupProperties;
+import com.barbearia.saas.config.StorageProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,6 +26,9 @@ class BackupServiceTest {
     private BackupProperties properties;
 
     @Mock
+    private StorageProperties storageProperties;
+
+    @Mock
     private Environment environment;
 
     @InjectMocks
@@ -42,6 +46,7 @@ class BackupServiceTest {
 
         when(properties.getDir()).thenReturn(backupRoot.toString());
         when(properties.getRetentionDays()).thenReturn(7);
+        when(storageProperties.isS3()).thenReturn(false);
         ReflectionTestUtils.setField(backupService, "uploadDir", uploads.toString());
         ReflectionTestUtils.setField(backupService, "datasourceUrl", "jdbc:postgresql://localhost:5432/barbearia_saas");
 
@@ -49,10 +54,10 @@ class BackupServiceTest {
 
         assertThat(result.get("status")).isEqualTo("ok");
         assertThat(result.get("uploads")).isEqualTo("ok");
+        assertThat(result.get("s3")).isEqualTo("desabilitado");
         Path pasta = Path.of(result.get("pasta").toString());
         assertThat(Files.exists(pasta.resolve("OK"))).isTrue();
         assertThat(Files.exists(pasta.resolve("uploads.zip"))).isTrue();
-        // pg_dump pode estar ausente no ambiente de teste
         assertThat(result.get("banco")).isIn("ok", "pulado");
     }
 }

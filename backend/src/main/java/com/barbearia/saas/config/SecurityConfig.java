@@ -36,6 +36,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitFilter rateLimitFilter;
+    private final AssinaturaGuardFilter assinaturaGuardFilter;
     private final UserDetailsService userDetailsService;
 
     @Value("${app.cors.allowed-origins}")
@@ -53,6 +55,7 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/webhooks/whatsapp",
                                 "/api/webhooks/whatsapp/**",
+                                "/api/webhooks/mercadopago/**",
                                 "/api/public/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -67,7 +70,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(assinaturaGuardFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

@@ -23,6 +23,10 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     List<Agendamento> findByBarbeariaIdAndBarbeiroIdAndDataHoraBetweenOrderByDataHoraAsc(
             Long barbeariaId, Long barbeiroId, LocalDateTime inicio, LocalDateTime fim);
 
+    /** Usado pelo lembrete automático de agendamentos (varredura entre todos os tenants). */
+    List<Agendamento> findByDataHoraBetweenAndStatus(
+            LocalDateTime inicio, LocalDateTime fim, StatusAgendamento status);
+
     List<Agendamento> findByClienteIdOrderByDataHoraDesc(Long clienteId);
 
     List<Agendamento> findByClienteIdAndStatusOrderByDataHoraDesc(Long clienteId, StatusAgendamento status);

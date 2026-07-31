@@ -41,6 +41,7 @@ class PortalBarbeiroServiceTest {
     @Mock private AvaliacaoRepository avaliacaoRepository;
     @Mock private AgendamentoService agendamentoService;
     @Mock private ComissaoService comissaoService;
+    @Mock private FidelidadeService fidelidadeService;
 
     @InjectMocks
     private PortalBarbeiroService portalBarbeiroService;

@@ -27,6 +27,7 @@ import CheckinPage from './pages/CheckinPage'
 import MarketplacePage from './pages/MarketplacePage'
 import LojaPublicaPage from './pages/LojaPublicaPage'
 import FranquiasPage from './pages/FranquiasPage'
+import AssinaturaPage from './pages/AssinaturaPage'
 import PortalLoginPage from './pages/portal/PortalLoginPage'
 import PortalRegistroPage from './pages/portal/PortalRegistroPage'
 import PortalRecuperarSenhaPage from './pages/portal/PortalRecuperarSenhaPage'
@@ -189,6 +190,7 @@ export default function App() {
         <Route path="checkin" element={<CheckinPage />} />
         <Route path="marketplace" element={<MarketplacePage />} />
         <Route path="franquias" element={<FranquiasPage />} />
+        <Route path="assinatura" element={<AssinaturaPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

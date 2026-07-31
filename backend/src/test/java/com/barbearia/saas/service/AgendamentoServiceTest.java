@@ -50,6 +50,8 @@ class AgendamentoServiceTest {
     private ComissaoService comissaoService;
     @Mock
     private FidelidadeService fidelidadeService;
+    @Mock
+    private NotificacaoService notificacaoService;
 
     @InjectMocks
     private AgendamentoService agendamentoService;

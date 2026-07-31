@@ -453,6 +453,27 @@ input:focus, select:focus, textarea:focus {
   padding: 1rem 0.25rem;
 }
 
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  padding: 1.25rem 0.25rem;
+}
+
+.loading-spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--line);
+  border-top-color: var(--brass);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .actions-row {
   display: flex;
   gap: 0.4rem;

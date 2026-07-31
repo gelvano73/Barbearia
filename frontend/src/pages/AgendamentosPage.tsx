@@ -5,6 +5,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import Modal from '../components/Modal'
+import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { agendamentosApi, barbeirosApi, clientesApi, servicosApi } from '../services/resources'
 
 const empty = {
@@ -49,6 +50,7 @@ export default function AgendamentosPage() {
   const [filtroData, setFiltroData] = useState('')
   const [error, setError] = useState('')
   const [loadingSlots, setLoadingSlots] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   // Carrega a listagem principal da página
   const carregar = async () => {
@@ -68,7 +70,10 @@ export default function AgendamentosPage() {
 
   // Effect: carga inicial dos dados
   useEffect(() => {
-    carregar().catch(() => setError('Não foi possível carregar agendamentos'))
+    setLoading(true)
+    carregar()
+      .catch(() => setError('Não foi possível carregar agendamentos'))
+      .finally(() => setLoading(false))
   }, [filtroData])
 
   const podeAgendar = useMemo(
@@ -191,8 +196,10 @@ export default function AgendamentosPage() {
       </div>
 
       <div className="panel">
-        {itens.length === 0 ? (
-          <div className="empty">Nenhum agendamento encontrado.</div>
+        {loading ? (
+          <LoadingState label="Carregando agendamentos…" />
+        ) : itens.length === 0 ? (
+          <EmptyState>Nenhum agendamento encontrado.</EmptyState>
         ) : (
           <table className="table">
             <thead>

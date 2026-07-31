@@ -73,7 +73,21 @@ export const agendamentosApi = {
 export const pagamentosApi = {
   listar: (params = {}) => api.get('/pagamentos', { params }),
   criar: (payload) => api.post('/pagamentos', payload),
+  criarOnline: (payload) => api.post('/pagamentos/online', payload),
+  reciboUrl: (id) => `/api/pagamentos/${id}/recibo`,
   cancelar: (id) => api.delete(`/pagamentos/${id}`),
+}
+
+/** Assinatura SaaS do tenant. */
+export const assinaturaApi = {
+  status: () => api.get('/assinatura'),
+  upgrade: (plano: string) => api.post('/assinatura/upgrade', { plano }),
+}
+
+/** Backup administrativo. */
+export const backupApi = {
+  listar: () => api.get('/backup'),
+  executar: () => api.post('/backup/executar'),
 }
 
 /** Programa de fidelidade: config, saldos, histórico e resgates. */

@@ -2,7 +2,9 @@ package com.barbearia.saas.service;
 
 import com.barbearia.saas.domain.entity.*;
 import com.barbearia.saas.domain.enums.OAuthProvider;
+import com.barbearia.saas.domain.enums.PlanoAssinatura;
 import com.barbearia.saas.domain.enums.Role;
+import com.barbearia.saas.domain.enums.StatusAssinatura;
 import com.barbearia.saas.domain.repository.*;
 import com.barbearia.saas.dto.auth.*;
 import com.barbearia.saas.exception.NegocioException;
@@ -37,9 +39,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     @Value("${app.oauth.dev-mode:true}")
     private boolean oauthDevMode;
+
+    @Value("${app.public-base-url:http://localhost:5173}")
+    private String publicBaseUrl = "http://localhost:5173";
+
+    @Value("${app.assinatura.trial-dias:14}")
+    private int trialDias;
 
     /** Registra uma nova barbearia com usuário administrador. */
     @Transactional
@@ -58,6 +67,9 @@ public class AuthService {
                 .telefone(blankToNull(request.getTelefoneBarbearia()))
                 .email(request.getEmail().toLowerCase().trim())
                 .ativo(true)
+                .plano(PlanoAssinatura.TRIAL)
+                .assinaturaStatus(StatusAssinatura.ATIVA)
+                .assinaturaVenceEm(LocalDateTime.now().plusDays(trialDias))
                 .build());
 
         unidadeService.criarPadrao(barbearia);
@@ -197,6 +209,16 @@ public class AuthService {
                 .build());
 
         log.info("Token de recuperação de senha para {}: {}", email, token);
+
+        String link = publicBaseUrl.replaceAll("/+$", "") + "/portal/recuperar-senha?token=" + token;
+        emailService.send(
+                usuario.getBarbearia() != null ? usuario.getBarbearia().getId() : null,
+                email,
+                "Recuperação de senha",
+                "Olá, " + usuario.getNome() + "!\n\n"
+                        + "Recebemos uma solicitação para redefinir sua senha. Clique no link abaixo para continuar:\n"
+                        + link + "\n\n"
+                        + "Se você não solicitou essa alteração, ignore este email.");
 
         return RecuperarSenhaResponse.builder()
                 .mensagem("Se o email existir, enviaremos instruções de recuperação")

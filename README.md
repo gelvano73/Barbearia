@@ -67,6 +67,28 @@ Painel: [Railway project](https://railway.com/project/a8bea42d-b5ce-464d-81dd-2d
 
 Para atualizar: faça deploy de novo com a CLI (`railway up`) ou conecte o GitHub no serviço (Deploy → Source).
 
+### Produção — o que já está no código
+
+| Capacidade | Como ativar |
+|------------|-------------|
+| Pagamento online (Mercado Pago) | `MERCADOPAGO_ENABLED=true` + `MERCADOPAGO_ACCESS_TOKEN` |
+| Fotos em S3/MinIO | `STORAGE_PROVIDER=s3` + bucket/keys |
+| E-mail (recuperação de senha / lembretes) | `MAIL_HOST` + usuário/senha |
+| Recibo PDF | Botão **Recibo** em Pagamentos |
+| Assinatura SaaS (trial 14 dias + upgrade) | Menu **Assinatura**; bloqueio HTTP 402 se `BLOQUEADA` |
+| Backup local + offsite S3 | Menu Assinatura → Executar backup; com S3 envia zip remoto |
+| Lembretes / confirmação / cancelamento | Scheduler + notificação ao criar/cancelar agendamento |
+| Rate limit login | 60 req/min por IP em `/api/auth/**` |
+| Auditoria de acessos | Logs `AUDIT` nas rotas autenticadas |
+| Monitoramento | `/actuator/health` + `SENTRY_DSN` (API) / `VITE_SENTRY_DSN` (web) |
+| CI/CD | `.github/workflows/ci.yml` + `deploy-railway.yml` (secrets Railway) |
+| IA OpenAI (opcional) | `AI_PROVIDER=openai` + `OPENAI_API_KEY` |
+
+Sem tokens externos, os fluxos rodam em **modo simulado** (dev-friendly).
+
+**NF-e completa** (SEFAZ/certificado A1) não entra neste escopo — o comprovante operacional é o **recibo PDF**.
+**Check-in facial** continua como MVP local (assinatura da imagem); reconhecimento biométrico de produção exige provedor dedicado.
+
 ### Opção 0b — Render (alternativa)
 
 O GitHub guarda o código; o site fica no ar pelo **Render** (deploy automático a cada `git push`).

@@ -74,7 +74,14 @@ export default function RecepcaoPagamentosPage() {
     setOpen(true)
   }
 
-  // Seleciona serviço sugerido pela IA
+  const nomeServicoDoAgendamento = (a) => {
+    if (!a) return ''
+    if (a.servico) return a.servico
+    const s = servicos.find((x) => String(x.id) === String(a.servicoId))
+    return s?.nome || ''
+  }
+
+  // Seleciona serviço do catálogo e preenche o valor
   const escolherServico = (servicoId) => {
     const s = servicos.find((x) => String(x.id) === String(servicoId))
     setForm((prev) => ({
@@ -87,15 +94,21 @@ export default function RecepcaoPagamentosPage() {
   const escolherAgendamento = (agendamentoId) => {
     const a = agendamentos.find((x) => String(x.id) === String(agendamentoId))
     if (!a) {
-      setForm((prev) => ({ ...prev, agendamentoId }))
+      setForm((prev) => ({ ...prev, agendamentoId: '' }))
       return
     }
-    const servico = servicos.find((s) => String(s.id) === String(a.servicoId))
+    const porId = a.servicoId
+      ? servicos.find((s) => String(s.id) === String(a.servicoId))
+      : null
+    const porNome = !porId && a.servico
+      ? servicos.find((s) => s.nome?.toLowerCase() === String(a.servico).toLowerCase())
+      : null
+    const servico = porId || porNome
     setForm((prev) => ({
       ...prev,
       agendamentoId,
       clienteId: a.clienteId ? String(a.clienteId) : prev.clienteId,
-      servicoId: a.servicoId ? String(a.servicoId) : prev.servicoId,
+      servicoId: servico ? String(servico.id) : prev.servicoId,
       valor: servico ? String(servico.preco) : prev.valor,
     }))
   }
@@ -217,7 +230,21 @@ export default function RecepcaoPagamentosPage() {
               </select>
             </label>
             <label>
-              Serviço
+              Agendamento (opcional)
+              <select
+                value={form.agendamentoId}
+                onChange={(e) => escolherAgendamento(e.target.value)}
+              >
+                <option value="">—</option>
+                {agendamentos.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {nomeServicoDoAgendamento(a) || 'Serviço'} · {a.clienteNome} · {formatDateTime(a.dataHora)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Tipo de serviço
               <select
                 value={form.servicoId}
                 onChange={(e) => escolherServico(e.target.value)}
@@ -231,6 +258,11 @@ export default function RecepcaoPagamentosPage() {
                 ))}
               </select>
             </label>
+            {servicos.length === 0 && (
+              <p className="error full" style={{ margin: 0 }}>
+                Nenhum serviço cadastrado. Cadastre o tipo (corte, barba…) em Serviços no painel admin.
+              </p>
+            )}
             <label>
               Valor
               <input
@@ -241,20 +273,6 @@ export default function RecepcaoPagamentosPage() {
                 onChange={(e) => setForm({ ...form, valor: e.target.value })}
                 required
               />
-            </label>
-            <label>
-              Agendamento
-              <select
-                value={form.agendamentoId}
-                onChange={(e) => escolherAgendamento(e.target.value)}
-              >
-                <option value="">—</option>
-                {agendamentos.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.clienteNome} · {formatDateTime(a.dataHora)}
-                  </option>
-                ))}
-              </select>
             </label>
             <label className="full">
               Descrição

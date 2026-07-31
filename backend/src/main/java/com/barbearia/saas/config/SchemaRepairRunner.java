@@ -30,6 +30,17 @@ public class SchemaRepairRunner implements ApplicationRunner {
                 "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS aceite_privacidade_em TIMESTAMP",
                 "ALTER TABLE clientes ADD COLUMN IF NOT EXISTS aceite_privacidade_em TIMESTAMP",
                 "ALTER TABLE barbeiros ADD COLUMN IF NOT EXISTS foto_url VARCHAR(500)",
+                "ALTER TABLE barbearias ADD COLUMN IF NOT EXISTS plano VARCHAR(30) DEFAULT 'TRIAL'",
+                "ALTER TABLE barbearias ADD COLUMN IF NOT EXISTS assinatura_status VARCHAR(30) DEFAULT 'ATIVA'",
+                "ALTER TABLE barbearias ADD COLUMN IF NOT EXISTS assinatura_vence_em TIMESTAMP",
+                "ALTER TABLE barbearias ADD COLUMN IF NOT EXISTS mp_customer_id VARCHAR(80)",
+                "ALTER TABLE barbearias ADD COLUMN IF NOT EXISTS mp_subscription_id VARCHAR(80)",
+                "ALTER TABLE pagamentos ADD COLUMN IF NOT EXISTS gateway VARCHAR(30)",
+                "ALTER TABLE pagamentos ADD COLUMN IF NOT EXISTS gateway_payment_id VARCHAR(120)",
+                "ALTER TABLE pagamentos ADD COLUMN IF NOT EXISTS gateway_status VARCHAR(60)",
+                "ALTER TABLE pagamentos ADD COLUMN IF NOT EXISTS checkout_url VARCHAR(500)",
+                "ALTER TABLE pagamentos ADD COLUMN IF NOT EXISTS pix_qr_code CLOB",
+                "ALTER TABLE pagamentos ADD COLUMN IF NOT EXISTS pix_copia_cola CLOB",
                 "UPDATE produtos SET preco = 0 WHERE preco IS NULL",
                 "UPDATE produtos SET marketplace_ativo = FALSE WHERE marketplace_ativo IS NULL"
         );

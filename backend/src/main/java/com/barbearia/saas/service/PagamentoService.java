@@ -48,6 +48,12 @@ public class PagamentoService {
         return toResponse(encontrarNaBarbearia(id));
     }
 
+    /** Busca a entidade do pagamento (uso interno, ex.: geração de recibo). */
+    @Transactional(readOnly = true)
+    public Pagamento buscarEntidadePorId(Long id) {
+        return encontrarNaBarbearia(id);
+    }
+
     /** Cria um novo registro. */
     @Transactional
     public PagamentoResponse criar(PagamentoRequest request) {
@@ -135,6 +141,12 @@ public class PagamentoService {
                 .status(p.getStatus())
                 .dataPagamento(p.getDataPagamento())
                 .descricao(p.getDescricao())
+                .gateway(p.getGateway())
+                .gatewayPaymentId(p.getGatewayPaymentId())
+                .gatewayStatus(p.getGatewayStatus())
+                .checkoutUrl(p.getCheckoutUrl())
+                .pixQrCode(p.getPixQrCode())
+                .pixCopiaCola(p.getPixCopiaCola())
                 .criadoEm(p.getCriadoEm())
                 .build();
     }

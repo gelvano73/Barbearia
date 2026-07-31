@@ -1,22 +1,28 @@
 package com.barbearia.saas.service;
 
 import com.barbearia.saas.config.BackupProperties;
+import com.barbearia.saas.config.StorageProperties;
 import com.barbearia.saas.exception.NegocioException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -31,6 +37,7 @@ public class BackupService {
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
     private final BackupProperties properties;
+    private final StorageProperties storageProperties;
     private final Environment environment;
 
     @Value("${app.upload.dir:uploads}")
@@ -38,6 +45,8 @@ public class BackupService {
 
     @Value("${spring.datasource.url:}")
     private String datasourceUrl;
+
+    private volatile S3Client s3Client;
 
     /** Executa um backup do banco de dados. */
     public Map<String, Object> executar() {
@@ -66,6 +75,13 @@ public class BackupService {
             Files.writeString(dest.resolve("OK"), stamp + "\n");
             limparAntigos(root);
 
+            if (storageProperties.isS3()) {
+                String remoteKey = enviarParaS3(dest, stamp);
+                resultado.put("s3", remoteKey != null ? remoteKey : "falha");
+            } else {
+                resultado.put("s3", "desabilitado");
+            }
+
             resultado.put("status", "ok");
             resultado.put("fim", LocalDateTime.now().toString());
             log.info("Backup concluído em {}", dest);
@@ -74,6 +90,77 @@ public class BackupService {
             log.error("Falha no backup: {}", e.getMessage(), e);
             throw new NegocioException("Falha no backup: " + e.getMessage());
         }
+    }
+
+    /** Lista pastas de backup locais (mais recentes primeiro). */
+    public List<Map<String, Object>> listar() {
+        Path root = Paths.get(properties.getDir()).toAbsolutePath().normalize();
+        if (!Files.isDirectory(root)) {
+            return List.of();
+        }
+        try (Stream<Path> dirs = Files.list(root)) {
+            return dirs.filter(Files::isDirectory)
+                    .sorted(Comparator.comparing(Path::getFileName).reversed())
+                    .limit(50)
+                    .map(p -> {
+                        Map<String, Object> item = new LinkedHashMap<>();
+                        item.put("nome", p.getFileName().toString());
+                        item.put("caminho", p.toString());
+                        item.put("ok", Files.exists(p.resolve("OK")));
+                        try {
+                            item.put("criadoEm", Files.getLastModifiedTime(p).toString());
+                        } catch (IOException e) {
+                            item.put("criadoEm", null);
+                        }
+                        return item;
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new NegocioException("Não foi possível listar backups: " + e.getMessage());
+        }
+    }
+
+    private String enviarParaS3(Path dest, String stamp) {
+        try {
+            Path zipLocal = dest.getParent().resolve(stamp + ".zip");
+            zipDirectory(dest, zipLocal);
+            String key = "backups/" + stamp + ".zip";
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(storageProperties.getS3Bucket())
+                    .key(key)
+                    .contentType("application/zip")
+                    .build();
+            getOrCreateS3Client().putObject(request, RequestBody.fromFile(zipLocal));
+            Files.deleteIfExists(zipLocal);
+            log.info("Backup enviado para S3: {}", key);
+            return key;
+        } catch (Exception e) {
+            log.warn("Falha ao enviar backup para S3: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private S3Client getOrCreateS3Client() {
+        if (s3Client == null) {
+            synchronized (this) {
+                if (s3Client == null) {
+                    var builder = S3Client.builder()
+                            .region(Region.of(storageProperties.getS3Region()));
+                    String endpoint = storageProperties.getS3Endpoint();
+                    if (endpoint != null && !endpoint.isBlank()) {
+                        builder = builder.endpointOverride(URI.create(endpoint)).forcePathStyle(true);
+                    }
+                    String accessKey = storageProperties.getS3AccessKey();
+                    String secretKey = storageProperties.getS3SecretKey();
+                    if (accessKey != null && !accessKey.isBlank() && secretKey != null && !secretKey.isBlank()) {
+                        builder = builder.credentialsProvider(StaticCredentialsProvider.create(
+                                AwsBasicCredentials.create(accessKey, secretKey)));
+                    }
+                    s3Client = builder.build();
+                }
+            }
+        }
+        return s3Client;
     }
 
     private boolean backupBanco(Path dest) throws IOException, InterruptedException {
@@ -207,7 +294,6 @@ public class BackupService {
     }
 
     private String hostFromJdbc() {
-        // jdbc:postgresql://host:5432/db
         try {
             String withoutPrefix = datasourceUrl.substring(datasourceUrl.indexOf("://") + 3);
             String hostPort = withoutPrefix.split("/")[0];

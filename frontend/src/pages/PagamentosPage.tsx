@@ -3,6 +3,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import Modal from '../components/Modal'
+import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { clientesApi, pagamentosApi, servicosApi } from '../services/resources'
 
 const FORMAS = [
@@ -27,6 +28,7 @@ const empty = {
   servicoId: '',
   dataPagamento: hojeISO(),
   descricao: '',
+  online: false,
 }
 
 export default function PagamentosPage() {
@@ -37,6 +39,7 @@ export default function PagamentosPage() {
   const [form, setForm] = useState(empty)
   const [filtroData, setFiltroData] = useState(hojeISO)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
 
   // Carrega a listagem principal da página
   const carregar = async () => {
@@ -52,7 +55,10 @@ export default function PagamentosPage() {
 
   // Effect: carga inicial dos dados
   useEffect(() => {
-    carregar().catch(() => setError('Não foi possível carregar pagamentos'))
+    setLoading(true)
+    carregar()
+      .catch(() => setError('Não foi possível carregar pagamentos'))
+      .finally(() => setLoading(false))
   }, [filtroData])
 
   const podeRegistrar = useMemo(
@@ -82,19 +88,32 @@ export default function PagamentosPage() {
     e.preventDefault()
     setError('')
     try {
-      await pagamentosApi.criar({
+      const payload = {
         valor: Number(form.valor),
         formaPagamento: form.formaPagamento,
         clienteId: Number(form.clienteId),
         servicoId: Number(form.servicoId),
         dataPagamento: form.dataPagamento,
         descricao: form.descricao || undefined,
-      })
-      setOpen(false)
+      }
+      if (form.online) {
+        const { data } = await pagamentosApi.criarOnline(payload)
+        setOpen(false)
+        if (data.checkoutUrl) {
+          window.open(data.checkoutUrl, '_blank', 'noopener,noreferrer')
+        }
+      } else {
+        await pagamentosApi.criar(payload)
+        setOpen(false)
+      }
       await carregar()
     } catch (err) {
       setError(err.response?.data?.mensagem || 'Erro ao registrar pagamento')
     }
+  }
+
+  const abrirRecibo = (id) => {
+    window.open(pagamentosApi.reciboUrl(id), '_blank', 'noopener,noreferrer')
   }
 
   // Cancela o item selecionado
@@ -116,6 +135,8 @@ export default function PagamentosPage() {
         </button>
       </div>
 
+      {loading && <LoadingState label="Carregando pagamentos…" />}
+
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <label style={{ maxWidth: 260 }}>
           Data
@@ -127,9 +148,9 @@ export default function PagamentosPage() {
       </div>
 
       <div className="panel">
-        {itens.length === 0 ? (
-          <div className="empty">Nenhum pagamento nesta data.</div>
-        ) : (
+        {!loading && itens.length === 0 ? (
+          <EmptyState>Nenhum pagamento nesta data.</EmptyState>
+        ) : !loading && (
           <table className="table">
             <thead>
               <tr>
@@ -155,9 +176,14 @@ export default function PagamentosPage() {
                   </td>
                   <td>
                     {item.status !== 'CANCELADO' && (
-                      <button className="btn danger small" type="button" onClick={() => cancelar(item.id)}>
-                        Cancelar
-                      </button>
+                      <div className="actions-row">
+                        <button className="btn secondary small" type="button" onClick={() => abrirRecibo(item.id)}>
+                          Recibo
+                        </button>
+                        <button className="btn danger small" type="button" onClick={() => cancelar(item.id)}>
+                          Cancelar
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -219,6 +245,11 @@ export default function PagamentosPage() {
                 ))}
               </select>
             </label>
+            {servicos.length === 0 && (
+              <p className="error full" style={{ margin: 0 }}>
+                Nenhum serviço cadastrado. Cadastre corte, barba etc. em Serviços.
+              </p>
+            )}
             <label>
               Valor
               <input
@@ -237,6 +268,14 @@ export default function PagamentosPage() {
                 onChange={(e) => setForm({ ...form, descricao: e.target.value })}
                 placeholder="Opcional"
               />
+            </label>
+            <label className="full aceite-privacidade" style={{ cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={Boolean(form.online)}
+                onChange={(e) => setForm({ ...form, online: e.target.checked })}
+              />
+              <span>Pagamento online (Mercado Pago / PIX link) — gera checkout e deixa status pendente até confirmar</span>
             </label>
           </div>
           {error && <div className="error" style={{ marginTop: '0.8rem' }}>{error}</div>}

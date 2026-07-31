@@ -66,6 +66,24 @@ public class Pagamento {
     @Column(name = "data_pagamento", nullable = false)
     private LocalDate dataPagamento;
 
+    @Column(length = 30)
+    private String gateway;
+
+    @Column(name = "gateway_payment_id", length = 120)
+    private String gatewayPaymentId;
+
+    @Column(name = "gateway_status", length = 60)
+    private String gatewayStatus;
+
+    @Column(name = "checkout_url", length = 500)
+    private String checkoutUrl;
+
+    @Column(name = "pix_qr_code", columnDefinition = "TEXT")
+    private String pixQrCode;
+
+    @Column(name = "pix_copia_cola", columnDefinition = "TEXT")
+    private String pixCopiaCola;
+
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;

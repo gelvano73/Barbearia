@@ -1,5 +1,6 @@
 package com.barbearia.saas.controller;
 
+import com.barbearia.saas.config.AssinaturaGuardFilter;
 import com.barbearia.saas.dto.cliente.ClienteRequest;
 import com.barbearia.saas.dto.cliente.ClienteResponse;
 import com.barbearia.saas.security.JwtAuthenticationFilter;
@@ -43,6 +44,9 @@ class ClienteControllerTest {
 
     @MockBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private AssinaturaGuardFilter assinaturaGuardFilter;
 
     @Test
     void deveListarClientes() throws Exception {

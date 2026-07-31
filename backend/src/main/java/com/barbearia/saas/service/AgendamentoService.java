@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -32,6 +33,8 @@ public class AgendamentoService {
 
     private static final List<StatusAgendamento> STATUS_IGNORADOS_CONFLITO =
             List.copyOf(EnumSet.of(StatusAgendamento.CANCELADO, StatusAgendamento.NAO_COMPARECEU));
+    private static final DateTimeFormatter MSG_FMT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm");
 
     private final AgendamentoRepository agendamentoRepository;
     private final ClienteRepository clienteRepository;
@@ -40,6 +43,7 @@ public class AgendamentoService {
     private final ServicoRepository servicoRepository;
     private final ComissaoService comissaoService;
     private final FidelidadeService fidelidadeService;
+    private final NotificacaoService notificacaoService;
 
     /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
@@ -104,7 +108,15 @@ public class AgendamentoService {
                 .status(StatusAgendamento.AGENDADO)
                 .build();
 
-        return toResponse(agendamentoRepository.save(agendamento));
+        Agendamento salvo = agendamentoRepository.save(agendamento);
+        notificacaoService.notificarCliente(
+                cliente,
+                barbeariaId,
+                "Agendamento confirmado",
+                "Olá, " + cliente.getNome() + "! Seu horário de " + nomeServico
+                        + " com " + barbeiro.getNome() + " foi agendado para "
+                        + salvo.getDataHora().format(MSG_FMT) + ".");
+        return toResponse(salvo);
     }
 
     /** Atualiza o registro existente. */
@@ -159,6 +171,15 @@ public class AgendamentoService {
         }
         agendamento.setStatus(StatusAgendamento.CANCELADO);
         agendamentoRepository.save(agendamento);
+        notificacaoService.notificarCliente(
+                agendamento.getCliente(),
+                agendamento.getBarbearia().getId(),
+                "Agendamento cancelado",
+                "Olá, " + agendamento.getCliente().getNome()
+                        + "! Seu agendamento de " + (agendamento.getServico() != null
+                        ? agendamento.getServico() : "serviço")
+                        + " em " + agendamento.getDataHora().format(MSG_FMT)
+                        + " foi cancelado.");
     }
 
     /** Valida conflito. */
@@ -202,7 +223,9 @@ public class AgendamentoService {
                 .dataHora(agendamento.getDataHora())
                 .duracaoMinutos(agendamento.getDuracaoMinutos())
                 .status(agendamento.getStatus())
-                .servico(agendamento.getServico())
+                .servico(agendamento.getServico() != null && !agendamento.getServico().isBlank()
+                        ? agendamento.getServico()
+                        : (agendamento.getServicoRef() != null ? agendamento.getServicoRef().getNome() : null))
                 .observacoes(agendamento.getObservacoes())
                 .podeAvaliar(podeAvaliar)
                 .criadoEm(agendamento.getCriadoEm())

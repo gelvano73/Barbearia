@@ -35,6 +35,7 @@ class IaAtendimentoServiceTest {
     @Mock private AgendamentoService agendamentoService;
     @Mock private BarbeiroRepository barbeiroRepository;
     @Mock private ServicoRepository servicoRepository;
+    @Mock private OpenAiClient openAiClient;
 
     @InjectMocks
     private IaAtendimentoService service;
@@ -45,6 +46,7 @@ class IaAtendimentoServiceTest {
         lenient().when(principal.getBarbeariaId()).thenReturn(1L);
         lenient().when(principal.getClienteId()).thenReturn(2L);
         lenient().when(principal.getNome()).thenReturn("Carlos Cliente");
+        lenient().when(openAiClient.completar(anyString(), anyString())).thenReturn(Optional.empty());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(principal, null, List.of()));
     }

@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
 import FotoField from '../components/FotoField'
+import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { clientesApi } from '../services/resources'
 
 const empty = { nome: '', telefone: '', email: '', observacoes: '' }
@@ -17,6 +18,7 @@ export default function ClientesPage() {
   const [form, setForm] = useState(empty)
   const [fotoUrl, setFotoUrl] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
 
   // Carrega a listagem principal da página
   const carregar = async () => {
@@ -26,7 +28,9 @@ export default function ClientesPage() {
 
   // Effect: carga inicial dos dados
   useEffect(() => {
-    carregar().catch(() => setError('Não foi possível carregar clientes'))
+    carregar()
+      .catch(() => setError('Não foi possível carregar clientes'))
+      .finally(() => setLoading(false))
   }, [])
 
   // Abre o modal para novo cadastro
@@ -103,8 +107,10 @@ export default function ClientesPage() {
       </div>
 
       <div className="panel">
-        {itens.length === 0 ? (
-          <div className="empty">Nenhum cliente cadastrado.</div>
+        {loading ? (
+          <LoadingState label="Carregando clientes…" />
+        ) : itens.length === 0 ? (
+          <EmptyState>Nenhum cliente cadastrado.</EmptyState>
         ) : (
           <table className="table">
             <thead>

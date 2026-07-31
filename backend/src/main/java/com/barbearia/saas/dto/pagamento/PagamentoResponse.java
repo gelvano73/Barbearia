@@ -25,5 +25,11 @@ public class PagamentoResponse {
     private StatusPagamento status;
     private LocalDate dataPagamento;
     private String descricao;
+    private String gateway;
+    private String gatewayPaymentId;
+    private String gatewayStatus;
+    private String checkoutUrl;
+    private String pixQrCode;
+    private String pixCopiaCola;
     private LocalDateTime criadoEm;
 }

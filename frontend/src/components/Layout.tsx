@@ -34,6 +34,7 @@ export default function Layout() {
           <NavLink to="/checkin" className={linkClass}>Check-in</NavLink>
           <NavLink to="/marketplace" className={linkClass}>Marketplace</NavLink>
           <NavLink to="/franquias" className={linkClass}>Franquias</NavLink>
+          <NavLink to="/assinatura" className={linkClass}>Assinatura</NavLink>
           <NavLink to="/recepcao" className={linkClass}>Recepção</NavLink>
         </>
       }

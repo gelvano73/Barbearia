@@ -49,6 +49,7 @@ public class IaAtendimentoService {
     private final AgendamentoService agendamentoService;
     private final BarbeiroRepository barbeiroRepository;
     private final ServicoRepository servicoRepository;
+    private final OpenAiClient openAiClient;
 
     /** Processa mensagem no chat de atendimento por IA. */
     @Transactional
@@ -93,6 +94,15 @@ public class IaAtendimentoService {
         }
         if (contemQualquer(msg, "ajuda", "help", "o que voce", "como funciona")) {
             return ajuda(ctx);
+        }
+
+        Optional<String> llm = openAiClient.completar(
+                "Você é a assistente de uma barbearia no Brasil. Responda em português, curto e útil. "
+                        + "Foque em serviços, horários e agendamento. Não invente preços.",
+                original.isBlank() ? msg : original);
+        if (llm.isPresent()) {
+            return resposta(llm.get(), "OPENAI", ctx,
+                    List.of("Sugerir serviços", "Horários disponíveis", "Quero agendar", "Ver barbeiros"));
         }
 
         return resposta(
