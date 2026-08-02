@@ -47,6 +47,10 @@ public class Servico {
     @Builder.Default
     private Boolean ativo = true;
 
+    /** Código LC 116/2003 específico do serviço (sobrescreve o padrão da barbearia). */
+    @Column(name = "codigo_lista_servico", length = 10)
+    private String codigoListaServico;
+
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;

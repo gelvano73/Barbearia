@@ -1,14 +1,18 @@
 /**
- * Login do portal do cliente, com opção OAuth quando disponível.
+ * Login do portal do cliente: e-mail/CPF + senha, OTP no telefone, ou OAuth.
  */
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 export default function PortalLoginPage() {
-  const { isAuthenticated, isCliente, loginCliente, loginOAuth } = useAuth()
-  const [email, setEmail] = useState('')
+  const { isAuthenticated, isCliente, loginCliente, loginOAuth, enviarOtp, loginOtp } = useAuth()
+  const [loginId, setLoginId] = useState('')
   const [senha, setSenha] = useState('')
+  const [otpMode, setOtpMode] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpHint, setOtpHint] = useState('')
+  const [codigo, setCodigo] = useState('')
   const [barbeariaId, setBarbeariaId] = useState('1')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -16,13 +20,22 @@ export default function PortalLoginPage() {
   if (isAuthenticated && isCliente) return <Navigate to="/portal" replace />
   if (isAuthenticated && !isCliente) return <Navigate to="/" replace />
 
-  // Submete o formulário
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await loginCliente(email, senha)
+      if (otpMode) {
+        if (!otpSent) {
+          const res = await enviarOtp(loginId.trim())
+          setOtpSent(true)
+          setOtpHint(res.telefoneMascarado ? `Código enviado para ${res.telefoneMascarado}` : 'Código enviado')
+        } else {
+          await loginOtp(loginId.trim(), codigo.trim())
+        }
+      } else {
+        await loginCliente(loginId.trim(), senha)
+      }
     } catch (err) {
       setError(err.response?.data?.mensagem || 'Falha no login')
     } finally {
@@ -30,14 +43,13 @@ export default function PortalLoginPage() {
     }
   }
 
-  // Login via provedor social (OAuth)
   const social = async (provider) => {
     setError('')
     setLoading(true)
     try {
       await loginOAuth(provider, {
-        providerUserId: `${provider}-dev-${email || 'demo'}`,
-        email: email || `demo.${provider}@cliente.com`,
+        providerUserId: `${provider}-dev-${loginId || 'demo'}`,
+        email: loginId.includes('@') ? loginId : `demo.${provider}@cliente.com`,
         nome: 'Cliente Social',
         barbeariaId: Number(barbeariaId),
         telefone: '11999999999',
@@ -61,18 +73,49 @@ export default function PortalLoginPage() {
 
         <form onSubmit={onSubmit}>
           <label>
-            Email
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            Email ou CPF
+            <input value={loginId} onChange={(e) => setLoginId(e.target.value)} required autoComplete="username" />
           </label>
-          <label>
-            Senha
-            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={6} />
-          </label>
+          {otpMode ? (
+            otpSent && (
+              <label>
+                Código recebido no telefone
+                <input value={codigo} onChange={(e) => setCodigo(e.target.value)} required inputMode="numeric" />
+              </label>
+            )
+          ) : (
+            <label>
+              Senha (mín. 8, maiúscula, minúscula e número)
+              <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={8} />
+            </label>
+          )}
+          {otpHint && <p className="subtitle">{otpHint}</p>}
           {error && <div className="error">{error}</div>}
           <button className="btn" type="submit" disabled={loading}>
-            {loading ? 'Aguarde...' : 'Entrar'}
+            {loading
+              ? 'Aguarde...'
+              : otpMode
+                ? otpSent
+                  ? 'Validar código'
+                  : 'Enviar código'
+                : 'Entrar'}
           </button>
         </form>
+
+        <button
+          type="button"
+          className="btn secondary"
+          style={{ marginTop: '0.75rem', width: '100%' }}
+          onClick={() => {
+            setOtpMode((v) => !v)
+            setOtpSent(false)
+            setCodigo('')
+            setOtpHint('')
+            setError('')
+          }}
+        >
+          {otpMode ? 'Entrar com senha' : 'Entrar com código no telefone'}
+        </button>
 
         <div style={{ marginTop: '1rem', display: 'grid', gap: '0.5rem' }}>
           <label>

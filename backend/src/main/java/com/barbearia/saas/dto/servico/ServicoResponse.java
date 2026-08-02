@@ -15,5 +15,6 @@ public class ServicoResponse {
     private BigDecimal preco;
     private Integer duracaoMinutos;
     private BigDecimal comissaoPercentual;
+    private String codigoListaServico;
     private Boolean ativo;
 }

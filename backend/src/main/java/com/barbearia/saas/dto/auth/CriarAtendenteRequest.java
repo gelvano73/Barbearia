@@ -1,6 +1,7 @@
 package com.barbearia.saas.dto.auth;
 
-import jakarta.validation.constraints.Email;
+import com.barbearia.saas.validation.SenhaForte;
+import com.barbearia.saas.validation.EmailReal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -14,11 +15,17 @@ public class CriarAtendenteRequest {
     private String nome;
 
     @NotBlank
-    @Email
+    @EmailReal
     @Size(max = 150)
     private String email;
 
+    @Size(max = 20)
+    private String telefone;
+
+    @Size(max = 14)
+    private String cpf;
+
     @NotBlank
-    @Size(min = 6, max = 100)
+    @SenhaForte
     private String senha;
 }

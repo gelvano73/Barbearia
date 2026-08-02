@@ -7,10 +7,12 @@ import com.barbearia.saas.domain.enums.TipoMovimentoCaixa;
 import com.barbearia.saas.domain.repository.*;
 import com.barbearia.saas.dto.pagamento.PagamentoRequest;
 import com.barbearia.saas.dto.pagamento.PagamentoResponse;
+import com.barbearia.saas.event.PagamentoConfirmadoEvent;
 import com.barbearia.saas.exception.NegocioException;
 import com.barbearia.saas.exception.RecursoNaoEncontradoException;
 import com.barbearia.saas.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class PagamentoService {
     private final CaixaRepository caixaRepository;
     private final MovimentoCaixaRepository movimentoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
@@ -112,6 +115,7 @@ public class PagamentoService {
                     .build());
         }
 
+        eventPublisher.publishEvent(new PagamentoConfirmadoEvent(this, pagamento.getId()));
         return toResponse(pagamento);
     }
 

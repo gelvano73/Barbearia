@@ -1,6 +1,6 @@
 package com.barbearia.saas.dto.auth;
 
-import jakarta.validation.constraints.Email;
+import com.barbearia.saas.validation.EmailReal;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -9,6 +9,6 @@ import lombok.Data;
 public class RecuperarSenhaRequest {
 
     @NotBlank
-    @Email
+    @EmailReal
     private String email;
 }

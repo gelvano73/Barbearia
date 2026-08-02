@@ -13,6 +13,7 @@ public class ClienteResponse {
     private String nome;
     private String telefone;
     private String email;
+    private String cpf;
     private String observacoes;
     private String fotoUrl;
     private Boolean ativo;

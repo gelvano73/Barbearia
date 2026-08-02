@@ -9,6 +9,8 @@ import com.barbearia.saas.dto.cliente.ClienteResponse;
 import com.barbearia.saas.exception.NegocioException;
 import com.barbearia.saas.exception.RecursoNaoEncontradoException;
 import com.barbearia.saas.security.SecurityUtils;
+import com.barbearia.saas.util.CpfUtil;
+import com.barbearia.saas.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +26,8 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final BarbeariaRepository barbeariaRepository;
     private final FotoStorageService fotoStorageService;
+    private final EmailDominioService emailDominioService;
 
-    /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
     public List<ClienteResponse> listar(boolean apenasAtivos) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
@@ -35,13 +37,11 @@ public class ClienteService {
         return clientes.stream().map(this::toResponse).toList();
     }
 
-    /** Busca o registro pelo identificador informado. */
     @Transactional(readOnly = true)
     public ClienteResponse buscarPorId(Long id) {
         return toResponse(encontrarNaBarbearia(id));
     }
 
-    /** Cria um novo registro. */
     @Transactional
     public ClienteResponse criar(ClienteRequest request) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
@@ -52,11 +52,19 @@ public class ClienteService {
         Barbearia barbearia = barbeariaRepository.findById(barbeariaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Barbearia não encontrada"));
 
+        String cpf = normalizarCpfObrigatorio(request.getCpf());
+        String email = blankToNull(request.getEmail());
+        if (email != null) {
+            emailDominioService.validarOuFalhar(email);
+            email = EmailUtil.normalizar(email);
+        }
+
         Cliente cliente = Cliente.builder()
                 .barbearia(barbearia)
                 .nome(request.getNome().trim())
                 .telefone(request.getTelefone().trim())
-                .email(blankToNull(request.getEmail()))
+                .email(email)
+                .cpf(cpf)
                 .observacoes(blankToNull(request.getObservacoes()))
                 .ativo(true)
                 .build();
@@ -64,18 +72,24 @@ public class ClienteService {
         return toResponse(clienteRepository.save(cliente));
     }
 
-    /** Atualiza o registro existente. */
     @Transactional
     public ClienteResponse atualizar(Long id, ClienteRequest request) {
         Cliente cliente = encontrarNaBarbearia(id);
         cliente.setNome(request.getNome().trim());
         cliente.setTelefone(request.getTelefone().trim());
-        cliente.setEmail(blankToNull(request.getEmail()));
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            emailDominioService.validarOuFalhar(request.getEmail());
+            cliente.setEmail(EmailUtil.normalizar(request.getEmail()));
+        } else {
+            cliente.setEmail(null);
+        }
         cliente.setObservacoes(blankToNull(request.getObservacoes()));
+        if (request.getCpf() != null && !request.getCpf().isBlank()) {
+            cliente.setCpf(normalizarCpfObrigatorio(request.getCpf()));
+        }
         return toResponse(clienteRepository.save(cliente));
     }
 
-    /** Faz upload e associa a foto ao registro. */
     @Transactional
     public ClienteResponse uploadFoto(Long id, MultipartFile arquivo) {
         Cliente cliente = encontrarNaBarbearia(id);
@@ -84,12 +98,23 @@ public class ClienteService {
         return toResponse(clienteRepository.save(cliente));
     }
 
-    /** Desativa o registro (soft delete). */
     @Transactional
     public void desativar(Long id) {
         Cliente cliente = encontrarNaBarbearia(id);
         cliente.setAtivo(false);
         clienteRepository.save(cliente);
+    }
+
+    private String normalizarCpfObrigatorio(String cpfRaw) {
+        if (cpfRaw == null || cpfRaw.isBlank()) {
+            throw new NegocioException("CPF do cliente é obrigatório (Receita Federal) para emissão de NFS-e");
+        }
+        String cpf = CpfUtil.somenteDigitos(cpfRaw);
+        if (!CpfUtil.isValidoParaNotaFiscal(cpf, true)) {
+            throw new NegocioException(
+                    "CPF inválido ou de demonstração. Informe o CPF real do tomador conforme a Receita Federal.");
+        }
+        return cpf;
     }
 
     private Cliente encontrarNaBarbearia(Long id) {
@@ -103,6 +128,7 @@ public class ClienteService {
                 .nome(cliente.getNome())
                 .telefone(cliente.getTelefone())
                 .email(cliente.getEmail())
+                .cpf(cliente.getCpf() != null ? CpfUtil.formatar(cliente.getCpf()) : null)
                 .observacoes(cliente.getObservacoes())
                 .fotoUrl(cliente.getFotoUrl())
                 .ativo(cliente.getAtivo())

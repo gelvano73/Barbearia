@@ -1,11 +1,13 @@
 /**
  * Fluxo de recuperação e redefinição de senha do cliente.
  */
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { authApi } from '../../services/resources'
+import { emailRealOk, MSG_EMAIL_INVALIDO } from '../../utils/email'
 
 export default function PortalRecuperarSenhaPage() {
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [token, setToken] = useState('')
   const [novaSenha, setNovaSenha] = useState('')
@@ -14,22 +16,33 @@ export default function PortalRecuperarSenhaPage() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
-  // Solicita a ação (recuperação/férias)
+  useEffect(() => {
+    const t = searchParams.get('token')
+    if (t) {
+      setToken(t)
+      setStep(2)
+      setMessage('Informe a nova senha para concluir a redefinição.')
+    }
+  }, [searchParams])
+
   const solicitar = async (e) => {
     e.preventDefault()
     setError('')
+    if (!emailRealOk(email)) {
+      setError(MSG_EMAIL_INVALIDO)
+      return
+    }
     try {
       const { data } = await authApi.recuperarSenha({ email })
       setTokenDev(data.tokenDev || '')
-      setToken(data.tokenDev || '')
-      setMessage(data.mensagem)
+      if (data.tokenDev) setToken(data.tokenDev)
+      setMessage(data.mensagem || 'Verifique seu e-mail para o link de redefinição.')
       setStep(2)
     } catch (err) {
       setError(err.response?.data?.mensagem || 'Falha ao solicitar recuperação')
     }
   }
 
-  // Redefine a senha com o token
   const redefinir = async (e) => {
     e.preventDefault()
     setError('')
@@ -50,7 +63,7 @@ export default function PortalRecuperarSenhaPage() {
           <span>PORTAL</span>
         </div>
         <h1>Recuperar senha</h1>
-        <p className="subtitle">Em desenvolvimento o token é exibido na tela.</p>
+        <p className="subtitle">Enviaremos um link para o e-mail cadastrado.</p>
 
         {step === 1 && (
           <form onSubmit={solicitar}>
@@ -72,8 +85,16 @@ export default function PortalRecuperarSenhaPage() {
               <input value={token} onChange={(e) => setToken(e.target.value)} required />
             </label>
             <label>
-              Nova senha
-              <input type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} required minLength={6} />
+              Nova senha (mín. 8, maiúscula, minúscula e número)
+              <input
+                type="password"
+                value={novaSenha}
+                onChange={(e) => setNovaSenha(e.target.value)}
+                required
+                minLength={8}
+                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
+                title="Mínimo 8 caracteres com maiúscula, minúscula e número"
+              />
             </label>
             {error && <div className="error">{error}</div>}
             <button className="btn" type="submit">Redefinir</button>

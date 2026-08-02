@@ -35,12 +35,14 @@ type AuthContextValue = {
   isAtendente: boolean
   isAdmin: boolean
   isStaff: boolean
-  login: (email: string, senha: string) => Promise<AuthSession>
+  login: (login: string, senha: string) => Promise<AuthSession>
   registro: (payload: Record<string, unknown>) => Promise<AuthSession>
-  loginCliente: (email: string, senha: string) => Promise<AuthSession>
+  loginCliente: (login: string, senha: string) => Promise<AuthSession>
   registroCliente: (payload: Record<string, unknown>) => Promise<AuthSession>
-  loginBarbeiro: (email: string, senha: string) => Promise<AuthSession>
-  loginRecepcao: (email: string, senha: string) => Promise<AuthSession>
+  loginBarbeiro: (login: string, senha: string) => Promise<AuthSession>
+  loginRecepcao: (login: string, senha: string) => Promise<AuthSession>
+  loginOtp: (login: string, codigo: string) => Promise<AuthSession>
+  enviarOtp: (login: string) => Promise<{ telefoneMascarado?: string; mensagem?: string }>
   loginOAuth: (provider: string, payload: Record<string, unknown>) => Promise<AuthSession>
   logout: () => void
 }
@@ -48,7 +50,6 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null)
 const STORAGE_KEY = 'barbearia_auth'
 
-// Lê a sessão previamente salva no navegador
 function loadStored(): AuthSession | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -58,7 +59,6 @@ function loadStored(): AuthSession | null {
   }
 }
 
-// Persiste a sessão no localStorage
 function persist(data: AuthSession) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
   return data
@@ -68,56 +68,57 @@ function persist(data: AuthSession) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<AuthSession | null>(loadStored)
 
-  // Atualiza estado e storage com a nova sessão
   const setSession = (data: AuthSession) => {
     setAuth(data)
     persist(data)
     return data
   }
 
-  // Login do admin/staff
-  const login = async (email: string, senha: string) => {
-    const { data } = await authApi.login({ email, senha })
+  const login = async (loginId: string, senha: string) => {
+    const { data } = await authApi.login({ login: loginId, senha })
     return setSession(data as AuthSession)
   }
 
-  // Cadastro de nova barbearia/admin
   const registro = async (payload: Record<string, unknown>) => {
     const { data } = await authApi.registro(payload)
     return setSession(data as AuthSession)
   }
 
-  // Login do cliente no portal
-  const loginCliente = async (email: string, senha: string) => {
-    const { data } = await authApi.loginCliente({ email, senha })
+  const loginCliente = async (loginId: string, senha: string) => {
+    const { data } = await authApi.loginCliente({ login: loginId, senha })
     return setSession(data as AuthSession)
   }
 
-  // Registro de cliente no portal
   const registroCliente = async (payload: Record<string, unknown>) => {
     const { data } = await authApi.registroCliente(payload)
     return setSession(data as AuthSession)
   }
 
-  // Login do barbeiro
-  const loginBarbeiro = async (email: string, senha: string) => {
-    const { data } = await authApi.loginBarbeiro({ email, senha })
+  const loginBarbeiro = async (loginId: string, senha: string) => {
+    const { data } = await authApi.loginBarbeiro({ login: loginId, senha })
     return setSession(data as AuthSession)
   }
 
-  // Login da recepção/atendente
-  const loginRecepcao = async (email: string, senha: string) => {
-    const { data } = await authApi.loginRecepcao({ email, senha })
+  const loginRecepcao = async (loginId: string, senha: string) => {
+    const { data } = await authApi.loginRecepcao({ login: loginId, senha })
     return setSession(data as AuthSession)
   }
 
-  // Login via provedor OAuth (Google etc.)
+  const enviarOtp = async (loginId: string) => {
+    const { data } = await authApi.enviarOtp({ login: loginId })
+    return data as { telefoneMascarado?: string; mensagem?: string }
+  }
+
+  const loginOtp = async (loginId: string, codigo: string) => {
+    const { data } = await authApi.verificarOtp({ login: loginId, codigo })
+    return setSession(data as AuthSession)
+  }
+
   const loginOAuth = async (provider: string, payload: Record<string, unknown>) => {
     const { data } = await authApi.oauth(provider, payload)
     return setSession(data as AuthSession)
   }
 
-  // Encerra a sessão e limpa o storage
   const logout = () => {
     setAuth(null)
     localStorage.removeItem(STORAGE_KEY)
@@ -138,10 +139,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       registroCliente,
       loginBarbeiro,
       loginRecepcao,
+      loginOtp,
+      enviarOtp,
       loginOAuth,
       logout,
     }),
-    [auth]
+    [auth],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

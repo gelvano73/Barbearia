@@ -40,17 +40,17 @@ export default function RecepcaoLoginPage() {
         <p className="subtitle">Agenda, fila, clientes, pagamentos e caixa.</p>
         <form onSubmit={onSubmit}>
           <label>
-            Email
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            Email ou CPF
+            <input value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
           </label>
           <label>
-            Senha
+            Senha (mín. 8, maiúscula, minúscula e número)
             <input
               type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
             />
           </label>
           {error && <div className="error">{error}</div>}

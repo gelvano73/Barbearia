@@ -23,6 +23,7 @@ export default function Layout() {
           <NavLink to="/servicos" className={linkClass}>Serviços</NavLink>
           <NavLink to="/agendamentos" className={linkClass}>Agendamentos</NavLink>
           <NavLink to="/pagamentos" className={linkClass}>Pagamentos</NavLink>
+          <NavLink to="/fiscal" className={linkClass}>Fiscal / NFS-e</NavLink>
           <NavLink to="/fidelidade" className={linkClass}>Fidelidade</NavLink>
           <NavLink to="/estoque" className={linkClass}>Estoque</NavLink>
           <NavLink to="/caixa" className={linkClass}>Caixa</NavLink>

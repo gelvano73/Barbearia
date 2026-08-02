@@ -16,4 +16,6 @@ public class MercadoPagoProperties {
     private String webhookSecret = "";
     private String publicKey = "";
     private String notificationUrl = "";
+    /** Permite checkout simulado sem token (somente desenvolvimento/UAT controlado). */
+    private boolean allowSimulated = false;
 }

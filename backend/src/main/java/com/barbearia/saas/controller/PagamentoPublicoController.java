@@ -1,13 +1,17 @@
 package com.barbearia.saas.controller;
 
+import com.barbearia.saas.config.MercadoPagoProperties;
 import com.barbearia.saas.domain.entity.Pagamento;
 import com.barbearia.saas.domain.enums.StatusPagamento;
 import com.barbearia.saas.domain.repository.PagamentoRepository;
+import com.barbearia.saas.event.PagamentoConfirmadoEvent;
+import com.barbearia.saas.exception.NegocioException;
 import com.barbearia.saas.exception.RecursoNaoEncontradoException;
 import com.barbearia.saas.service.AssinaturaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +27,18 @@ public class PagamentoPublicoController {
 
     private final PagamentoRepository pagamentoRepository;
     private final AssinaturaService assinaturaService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final MercadoPagoProperties mercadoPagoProperties;
 
     /** Marca o pagamento/assinatura simulado (sem gateway configurado) como pago. Uso em desenvolvimento. */
     @GetMapping("/simulado/{referencia}")
     @Operation(summary = "Confirmar pagamento simulado (dev)")
     @Transactional
     public ResponseEntity<Map<String, Object>> confirmarSimulado(@PathVariable String referencia) {
+        if (!mercadoPagoProperties.isAllowSimulated()) {
+            throw new NegocioException("Checkout simulado desabilitado neste ambiente");
+        }
+
         if (referencia != null && referencia.startsWith("assinatura-")) {
             assinaturaService.confirmarPagamentoAssinatura(referencia);
             return ResponseEntity.ok(Map.of(
@@ -45,6 +55,7 @@ public class PagamentoPublicoController {
             pagamento.setStatus(StatusPagamento.PAGO);
             pagamento.setGatewayStatus("approved");
             pagamentoRepository.save(pagamento);
+            eventPublisher.publishEvent(new PagamentoConfirmadoEvent(this, pagamento.getId()));
         }
 
         return ResponseEntity.ok(Map.of(

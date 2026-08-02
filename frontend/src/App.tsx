@@ -15,6 +15,7 @@ import BarbeirosPage from './pages/BarbeirosPage'
 import ServicosPage from './pages/ServicosPage'
 import AgendamentosPage from './pages/AgendamentosPage'
 import PagamentosPage from './pages/PagamentosPage'
+import FiscalPage from './pages/FiscalPage'
 import FidelidadePage from './pages/FidelidadePage'
 import EstoquePage from './pages/EstoquePage'
 import CaixaPage from './pages/CaixaPage'
@@ -179,6 +180,7 @@ export default function App() {
         <Route path="servicos" element={<ServicosPage />} />
         <Route path="agendamentos" element={<AgendamentosPage />} />
         <Route path="pagamentos" element={<PagamentosPage />} />
+        <Route path="fiscal" element={<FiscalPage />} />
         <Route path="fidelidade" element={<FidelidadePage />} />
         <Route path="estoque" element={<EstoquePage />} />
         <Route path="caixa" element={<CaixaPage />} />

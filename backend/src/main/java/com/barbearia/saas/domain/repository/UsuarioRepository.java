@@ -13,5 +13,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("SELECT u FROM Usuario u JOIN FETCH u.barbearia WHERE u.email = :email")
     Optional<Usuario> findByEmail(@Param("email") String email);
 
+    @Query("SELECT u FROM Usuario u JOIN FETCH u.barbearia WHERE u.cpf = :cpf")
+    Optional<Usuario> findByCpf(@Param("cpf") String cpf);
+
     boolean existsByEmail(String email);
+
+    boolean existsByCpf(String cpf);
 }

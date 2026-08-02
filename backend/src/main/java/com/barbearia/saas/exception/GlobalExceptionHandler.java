@@ -79,10 +79,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
         log.error("Erro interno em {}", request.getRequestURI(), ex);
-        String mensagem = ex.getMessage() == null || ex.getMessage().isBlank()
-                ? "Erro interno no servidor. Confira se a API está rodando e o banco está liberado."
-                : ex.getMessage();
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno", mensagem, request.getRequestURI(), null);
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno",
+                "Ocorreu um erro inesperado. Tente novamente ou contate o suporte.",
+                request.getRequestURI(), null);
     }
 
     private String formatFieldError(FieldError error) {

@@ -38,6 +38,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RateLimitFilter rateLimitFilter;
     private final AssinaturaGuardFilter assinaturaGuardFilter;
+    private final SecurityHeadersFilter securityHeadersFilter;
     private final UserDetailsService userDetailsService;
 
     @Value("${app.cors.allowed-origins}")
@@ -71,6 +72,7 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 // Âncora só em filtros nativos do Spring Security (custom filters não têm order registrado).
+                .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(assinaturaGuardFilter, UsernamePasswordAuthenticationFilter.class);

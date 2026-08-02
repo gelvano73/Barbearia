@@ -1,5 +1,6 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.config.SecurityAppProperties;
 import com.barbearia.saas.domain.entity.*;
 import com.barbearia.saas.domain.enums.OAuthProvider;
 import com.barbearia.saas.domain.enums.PlanoAssinatura;
@@ -11,16 +12,20 @@ import com.barbearia.saas.exception.NegocioException;
 import com.barbearia.saas.exception.RecursoNaoEncontradoException;
 import com.barbearia.saas.security.JwtService;
 import com.barbearia.saas.security.UsuarioPrincipal;
+import com.barbearia.saas.util.CpfUtil;
+import com.barbearia.saas.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 /** Autenticação, registro de usuários/clientes, OAuth e reset de senha. */
@@ -40,6 +45,10 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+    private final LoginAttemptService loginAttemptService;
+    private final OtpService otpService;
+    private final EmailDominioService emailDominioService;
+    private final SecurityAppProperties securityAppProperties;
 
     @Value("${app.oauth.dev-mode:true}")
     private boolean oauthDevMode;
@@ -53,8 +62,17 @@ public class AuthService {
     /** Registra uma nova barbearia com usuário administrador. */
     @Transactional
     public AuthResponse registrar(RegistroRequest request) {
+        emailDominioService.validarOuFalhar(request.getEmail());
         if (usuarioRepository.existsByEmail(request.getEmail())) {
             throw new NegocioException("Email já cadastrado");
+        }
+        String cpf = CpfUtil.somenteDigitos(request.getCpf());
+        if (!CpfUtil.isValidoParaNotaFiscal(cpf, true)) {
+            throw new NegocioException(
+                    "CPF inválido ou de demonstração. Informe o CPF real cadastrado na Receita Federal.");
+        }
+        if (usuarioRepository.existsByCpf(cpf)) {
+            throw new NegocioException("CPF já cadastrado");
         }
         if (request.getCnpj() != null && !request.getCnpj().isBlank()
                 && barbeariaRepository.existsByCnpj(normalizarCnpj(request.getCnpj()))) {
@@ -78,6 +96,8 @@ public class AuthService {
                 .barbearia(barbearia)
                 .nome(request.getNomeAdmin().trim())
                 .email(request.getEmail().toLowerCase().trim())
+                .cpf(cpf)
+                .telefone(blankToNull(request.getTelefoneBarbearia()))
                 .senhaHash(passwordEncoder.encode(request.getSenha()))
                 .role(Role.ADMIN)
                 .ativo(true)
@@ -90,9 +110,18 @@ public class AuthService {
     /** Registra um novo cliente no portal. */
     @Transactional
     public AuthResponse registrarCliente(RegistroClienteRequest request) {
+        emailDominioService.validarOuFalhar(request.getEmail());
         String email = request.getEmail().toLowerCase().trim();
         if (usuarioRepository.existsByEmail(email)) {
             throw new NegocioException("Email já cadastrado");
+        }
+        String cpf = CpfUtil.somenteDigitos(request.getCpf());
+        if (!CpfUtil.isValidoParaNotaFiscal(cpf, true)) {
+            throw new NegocioException(
+                    "CPF inválido ou de demonstração. Informe o CPF real cadastrado na Receita Federal.");
+        }
+        if (usuarioRepository.existsByCpf(cpf)) {
+            throw new NegocioException("CPF já cadastrado");
         }
 
         Barbearia barbearia = barbeariaRepository.findById(request.getBarbeariaId())
@@ -103,6 +132,8 @@ public class AuthService {
                 .barbearia(barbearia)
                 .nome(request.getNome().trim())
                 .email(email)
+                .cpf(cpf)
+                .telefone(request.getTelefone().trim())
                 .senhaHash(passwordEncoder.encode(request.getSenha()))
                 .role(Role.CLIENTE)
                 .ativo(true)
@@ -115,6 +146,7 @@ public class AuthService {
                 .nome(request.getNome().trim())
                 .telefone(request.getTelefone().trim())
                 .email(email)
+                .cpf(cpf)
                 .ativo(true)
                 .aceitePrivacidadeEm(LocalDateTime.now())
                 .build());
@@ -125,11 +157,17 @@ public class AuthService {
     /** Autentica o usuário e retorna o token JWT. */
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getSenha()));
-
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail().toLowerCase().trim())
-                .orElseThrow(() -> new NegocioException("Usuário não encontrado"));
+        String chave = request.getLogin() != null ? request.getLogin().trim() : "";
+        loginAttemptService.verificarNaoBloqueado(chave);
+        Usuario usuario = buscarPorLogin(chave);
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(usuario.getEmail(), request.getSenha()));
+            loginAttemptService.registrarSucesso(chave);
+        } catch (BadCredentialsException e) {
+            loginAttemptService.registrarFalha(chave);
+            throw new NegocioException("Credenciais inválidas");
+        }
 
         return buildAuthResponse(usuario, usuario.getBarbearia(), resolveClienteId(usuario), resolveBarbeiroId(usuario));
     }
@@ -173,7 +211,8 @@ public class AuthService {
             throw new NegocioException("Apenas admin pode criar recepcionista");
         }
 
-        String email = request.getEmail().toLowerCase().trim();
+        emailDominioService.validarOuFalhar(request.getEmail());
+        String email = EmailUtil.normalizar(request.getEmail());
         if (usuarioRepository.existsByEmail(email)) {
             throw new NegocioException("Email já cadastrado");
         }
@@ -185,6 +224,9 @@ public class AuthService {
                 .barbearia(barbearia)
                 .nome(request.getNome().trim())
                 .email(email)
+                .telefone(blankToNull(request.getTelefone()))
+                .cpf(request.getCpf() != null && !request.getCpf().isBlank()
+                        ? CpfUtil.somenteDigitos(request.getCpf()) : null)
                 .senhaHash(passwordEncoder.encode(request.getSenha()))
                 .role(Role.ATENDENTE)
                 .ativo(true)
@@ -193,13 +235,91 @@ public class AuthService {
         return buildAuthResponse(atendente, barbearia, null, null);
     }
 
+    /** Envia código OTP para o telefone do usuário (login sem senha). */
+    @Transactional(readOnly = true)
+    public Map<String, Object> enviarOtp(OtpEnviarRequest request) {
+        String chave = request.getLogin().trim();
+        loginAttemptService.verificarNaoBloqueado(chave);
+        Usuario usuario = buscarPorLogin(chave);
+        String telefone = resolverTelefone(usuario);
+        String mascarado = otpService.gerarEEnviar(
+                chave, telefone, usuario.getBarbearia().getId(), usuario.getNome());
+        return Map.of(
+                "mensagem", "Código enviado para o telefone cadastrado",
+                "telefoneMascarado", mascarado);
+    }
+
+    /** Valida OTP e retorna JWT. */
+    @Transactional(readOnly = true)
+    public AuthResponse verificarOtp(OtpVerificarRequest request) {
+        String chave = request.getLogin().trim();
+        loginAttemptService.verificarNaoBloqueado(chave);
+        try {
+            otpService.validar(chave, request.getCodigo());
+            loginAttemptService.registrarSucesso(chave);
+        } catch (NegocioException e) {
+            loginAttemptService.registrarFalha(chave);
+            throw e;
+        }
+        Usuario usuario = buscarPorLogin(chave);
+        return buildAuthResponse(usuario, usuario.getBarbearia(), resolveClienteId(usuario), resolveBarbeiroId(usuario));
+    }
+
+    private Usuario buscarPorLogin(String login) {
+        if (login == null || login.isBlank()) {
+            throw new NegocioException("Informe e-mail ou CPF");
+        }
+        String valor = login.trim();
+        if (CpfUtil.pareceCpf(valor)) {
+            String cpf = CpfUtil.somenteDigitos(valor);
+            if (!CpfUtil.isValido(cpf)) {
+                throw new NegocioException("CPF inválido");
+            }
+            return usuarioRepository.findByCpf(cpf)
+                    .orElseThrow(() -> new NegocioException("Usuário não encontrado"));
+        }
+        return usuarioRepository.findByEmail(valor.toLowerCase())
+                .orElseThrow(() -> new NegocioException("Usuário não encontrado"));
+    }
+
+    private String resolverTelefone(Usuario usuario) {
+        if (usuario.getTelefone() != null && !usuario.getTelefone().isBlank()) {
+            return usuario.getTelefone();
+        }
+        if (usuario.getRole() == Role.CLIENTE) {
+            return clienteRepository.findByUsuarioId(usuario.getId())
+                    .map(Cliente::getTelefone)
+                    .filter(t -> t != null && !t.isBlank())
+                    .orElseThrow(() -> new NegocioException("Usuário sem telefone cadastrado"));
+        }
+        if (usuario.getBarbearia() != null && usuario.getBarbearia().getTelefone() != null
+                && !usuario.getBarbearia().getTelefone().isBlank()) {
+            return usuario.getBarbearia().getTelefone();
+        }
+        throw new NegocioException("Usuário sem telefone cadastrado para receber o código");
+    }
+
+    private Long resolveClienteId(Usuario usuario) {
+        if (usuario.getRole() != Role.CLIENTE) {
+            return null;
+        }
+        return clienteRepository.findByUsuarioId(usuario.getId())
+                .map(Cliente::getId)
+                .orElse(null);
+    }
+
     /** Inicia o fluxo de recuperação de senha. */
     @Transactional
     public RecuperarSenhaResponse recuperarSenha(RecuperarSenhaRequest request) {
-        String email = request.getEmail().toLowerCase().trim();
-        Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Email não encontrado"));
+        String email = EmailUtil.normalizar(request.getEmail());
+        String mensagemPadrao = "Se o e-mail existir e estiver ativo, enviaremos instruções de recuperação";
 
+        var usuarioOpt = usuarioRepository.findByEmail(email);
+        if (usuarioOpt.isEmpty()) {
+            return RecuperarSenhaResponse.builder().mensagem(mensagemPadrao).build();
+        }
+
+        Usuario usuario = usuarioOpt.get();
         String token = UUID.randomUUID().toString().replace("-", "");
         passwordResetTokenRepository.save(PasswordResetToken.builder()
                 .usuario(usuario)
@@ -208,7 +328,7 @@ public class AuthService {
                 .usado(false)
                 .build());
 
-        log.info("Token de recuperação de senha para {}: {}", email, token);
+        log.info("Token de recuperação de senha gerado para usuário id={}", usuario.getId());
 
         String link = publicBaseUrl.replaceAll("/+$", "") + "/portal/recuperar-senha?token=" + token;
         emailService.send(
@@ -220,10 +340,12 @@ public class AuthService {
                         + link + "\n\n"
                         + "Se você não solicitou essa alteração, ignore este email.");
 
-        return RecuperarSenhaResponse.builder()
-                .mensagem("Se o email existir, enviaremos instruções de recuperação")
-                .tokenDev(token)
-                .build();
+        RecuperarSenhaResponse.RecuperarSenhaResponseBuilder builder = RecuperarSenhaResponse.builder()
+                .mensagem(mensagemPadrao);
+        if (securityAppProperties.isExposeDevTokens()) {
+            builder.tokenDev(token);
+        }
+        return builder.build();
     }
 
     /** Redefine a senha usando o token recebido. */
@@ -311,15 +433,6 @@ public class AuthService {
         return buildAuthResponse(usuario, barbearia, cliente.getId(), null);
     }
 
-    private Long resolveClienteId(Usuario usuario) {
-        if (usuario.getRole() != Role.CLIENTE) {
-            return null;
-        }
-        return clienteRepository.findByUsuarioId(usuario.getId())
-                .map(Cliente::getId)
-                .orElse(null);
-    }
-
     private Long resolveBarbeiroId(Usuario usuario) {
         if (usuario.getRole() != Role.BARBEIRO) {
             return null;
@@ -354,8 +467,14 @@ public class AuthService {
         if (cnpj == null || cnpj.isBlank()) {
             return null;
         }
-        String digits = cnpj.replaceAll("\\D", "");
-        return digits.isBlank() ? null : digits;
+        String digits = com.barbearia.saas.util.CnpjUtil.somenteDigitos(cnpj);
+        if (digits.isBlank()) {
+            return null;
+        }
+        if (!com.barbearia.saas.util.CnpjUtil.isValido(digits)) {
+            throw new NegocioException("CNPJ inválido segundo dígitos verificadores da Receita Federal");
+        }
+        return digits;
     }
 
     /** Lista barbearias ativas. */

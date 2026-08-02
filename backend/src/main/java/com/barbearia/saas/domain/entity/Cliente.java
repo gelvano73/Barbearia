@@ -38,6 +38,10 @@ public class Cliente {
     @Column(length = 150)
     private String email;
 
+    /** CPF do tomador (Receita Federal) — obrigatório para NFS-e. */
+    @Column(length = 11)
+    private String cpf;
+
     @Column(name = "foto_url", length = 500)
     private String fotoUrl;
 

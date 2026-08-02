@@ -1,6 +1,7 @@
 package com.barbearia.saas.dto.cliente;
 
-import jakarta.validation.constraints.Email;
+import com.barbearia.saas.validation.Cpf;
+import com.barbearia.saas.validation.EmailReal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -17,9 +18,13 @@ public class ClienteRequest {
     @Size(max = 20)
     private String telefone;
 
-    @Email
+    @EmailReal(optional = true)
     @Size(max = 150)
     private String email;
+
+    /** CPF real do tomador (Receita Federal) — necessário para NFS-e. */
+    @Cpf(optional = true)
+    private String cpf;
 
     @Size(max = 500)
     private String observacoes;

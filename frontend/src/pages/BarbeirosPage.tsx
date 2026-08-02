@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
 import FotoField from '../components/FotoField'
 import { barbeirosApi } from '../services/resources'
+import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
 const empty = { nome: '', telefone: '', especialidade: '' }
 const emptyConta = { email: '', senha: '' }
@@ -102,6 +103,10 @@ export default function BarbeirosPage() {
     e.preventDefault()
     setError('')
     setOk('')
+    if (!emailRealOk(conta.email)) {
+      setError(MSG_EMAIL_INVALIDO)
+      return
+    }
     try {
       await barbeirosApi.criarConta(selected.id, conta)
       setContaOpen(false)

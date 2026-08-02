@@ -1,6 +1,7 @@
 package com.barbearia.saas.dto.barbeiro;
 
-import jakarta.validation.constraints.Email;
+import com.barbearia.saas.validation.EmailReal;
+import com.barbearia.saas.validation.SenhaForte;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -10,11 +11,11 @@ import lombok.Data;
 public class CriarContaBarbeiroRequest {
 
     @NotBlank
-    @Email
+    @EmailReal
     @Size(max = 150)
     private String email;
 
     @NotBlank
-    @Size(min = 6, max = 100)
+    @SenhaForte
     private String senha;
 }

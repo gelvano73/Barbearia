@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/AuthContext'
 import { authApi } from '../services/resources'
+import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
 const emptyAtendente = { nome: '', email: '', senha: '' }
 
@@ -42,6 +43,10 @@ export default function DashboardPage() {
     e.preventDefault()
     setError('')
     setOk('')
+    if (!emailRealOk(form.email)) {
+      setError(MSG_EMAIL_INVALIDO)
+      return
+    }
     try {
       await authApi.criarAtendente({
         nome: form.nome.trim(),

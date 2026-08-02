@@ -16,6 +16,13 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   flyway:
     enabled: false
+  mail:
+    host: localhost
+    port: 1025
+
+server:
+  error:
+    include-message: always
 
 app:
   jwt:
@@ -25,8 +32,14 @@ app:
     allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:5175,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175
   oauth:
     dev-mode: true
+  security:
+    expose-dev-tokens: true
+  mercadopago:
+    allow-simulated: true
   upload:
     dir: uploads
+  email:
+    validar-dns: false
   backup:
     enabled: true
     cron: "0 0 3 * * *"

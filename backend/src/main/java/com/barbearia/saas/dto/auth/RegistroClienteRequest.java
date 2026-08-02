@@ -1,7 +1,9 @@
 package com.barbearia.saas.dto.auth;
 
+import com.barbearia.saas.validation.Cpf;
+import com.barbearia.saas.validation.SenhaForte;
 import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.Email;
+import com.barbearia.saas.validation.EmailReal;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,12 +25,16 @@ public class RegistroClienteRequest {
     private String telefone;
 
     @NotBlank
-    @Email
+    @Cpf
+    private String cpf;
+
+    @NotBlank
+    @EmailReal
     @Size(max = 150)
     private String email;
 
     @NotBlank
-    @Size(min = 6, max = 100)
+    @SenhaForte
     private String senha;
 
     /** Aceite explícito da Política de Privacidade (obrigatório). */

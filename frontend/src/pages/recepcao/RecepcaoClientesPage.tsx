@@ -4,8 +4,9 @@
 import { useEffect, useState } from 'react'
 import Modal from '../../components/Modal'
 import { recepcaoApi } from '../../services/resources'
+import { emailRealOk, MSG_EMAIL_INVALIDO } from '../../utils/email'
 
-const empty = { nome: '', telefone: '', email: '', observacoes: '' }
+const empty = { nome: '', telefone: '', email: '', cpf: '', observacoes: '' }
 
 export default function RecepcaoClientesPage() {
   const [itens, setItens] = useState([])
@@ -15,13 +16,11 @@ export default function RecepcaoClientesPage() {
   const [error, setError] = useState('')
   const [filtro, setFiltro] = useState('')
 
-  // Carrega a listagem principal da página
   const carregar = async () => {
     const { data } = await recepcaoApi.clientes()
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar clientes'))
   }, [])
@@ -32,11 +31,11 @@ export default function RecepcaoClientesPage() {
     return (
       c.nome?.toLowerCase().includes(q) ||
       c.telefone?.includes(q) ||
+      c.cpf?.includes(q) ||
       c.email?.toLowerCase().includes(q)
     )
   })
 
-  // Abre o modal para novo cadastro
   const abrirNovo = () => {
     setEditing(null)
     setForm(empty)
@@ -44,23 +43,30 @@ export default function RecepcaoClientesPage() {
     setOpen(true)
   }
 
-  // Abre o modal preenchido para edição
   const abrirEdicao = (item) => {
     setEditing(item)
     setForm({
       nome: item.nome || '',
       telefone: item.telefone || '',
       email: item.email || '',
+      cpf: item.cpf || '',
       observacoes: item.observacoes || '',
     })
     setError('')
     setOpen(true)
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
+    if (form.email?.trim() && !emailRealOk(form.email)) {
+      setError(MSG_EMAIL_INVALIDO)
+      return
+    }
+    if (!editing && !form.cpf?.replace(/\D/g, '').match(/^\d{11}$/)) {
+      setError('Informe o CPF real do cliente (11 dígitos) para NFS-e.')
+      return
+    }
     try {
       if (editing) {
         await recepcaoApi.atualizarCliente(editing.id, form)
@@ -86,25 +92,22 @@ export default function RecepcaoClientesPage() {
         </button>
       </div>
 
-      <div className="panel" style={{ marginBottom: '1rem' }}>
-        <label>
-          Buscar
-          <input
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
-            placeholder="Nome, telefone ou email"
-          />
-        </label>
-      </div>
-
       <div className="panel">
+        <input
+          placeholder="Nome, telefone, CPF ou email"
+          value={filtro}
+          onChange={(e) => setFiltro(e.target.value)}
+          style={{ marginBottom: '1rem', maxWidth: 360 }}
+        />
+        {error && <div className="error">{error}</div>}
         {filtrados.length === 0 ? (
-          <div className="empty">Nenhum cliente encontrado.</div>
+          <p className="empty">Nenhum cliente.</p>
         ) : (
           <table className="table">
             <thead>
               <tr>
                 <th>Nome</th>
+                <th>CPF</th>
                 <th>Telefone</th>
                 <th>Email</th>
                 <th></th>
@@ -114,6 +117,7 @@ export default function RecepcaoClientesPage() {
               {filtrados.map((item) => (
                 <tr key={item.id}>
                   <td>{item.nome}</td>
+                  <td>{item.cpf || '—'}</td>
                   <td>{item.telefone}</td>
                   <td>{item.email || '—'}</td>
                   <td>
@@ -144,7 +148,17 @@ export default function RecepcaoClientesPage() {
               />
             </label>
             <label>
-              Email
+              CPF (Receita Federal)
+              <input
+                value={form.cpf}
+                onChange={(e) => setForm({ ...form, cpf: e.target.value })}
+                required={!editing}
+                placeholder="000.000.000-00"
+                inputMode="numeric"
+              />
+            </label>
+            <label>
+              Email (real)
               <input
                 type="email"
                 value={form.email}
@@ -160,7 +174,7 @@ export default function RecepcaoClientesPage() {
               />
             </label>
           </div>
-          {error && <div className="error">{error}</div>}
+          {error && <div className="error" style={{ marginTop: '0.8rem' }}>{error}</div>}
           <div className="actions-row" style={{ marginTop: '1rem' }}>
             <button className="btn" type="submit">
               Salvar

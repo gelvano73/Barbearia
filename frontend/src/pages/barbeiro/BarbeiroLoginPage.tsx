@@ -40,12 +40,12 @@ export default function BarbeiroLoginPage() {
         <p className="subtitle">Agenda, comissões, metas e avaliações.</p>
         <form onSubmit={onSubmit}>
           <label>
-            Email
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            Email ou CPF
+            <input value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="username" />
           </label>
           <label>
-            Senha
-            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={6} />
+            Senha (mín. 8, maiúscula, minúscula e número)
+            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={8} />
           </label>
           {error && <div className="error">{error}</div>}
           <button className="btn" type="submit" disabled={loading}>

@@ -54,7 +54,12 @@ public class MercadoPagoClient {
      * retorna um checkout simulado para uso em desenvolvimento.
      */
     public Map<String, Object> createPreference(String title, BigDecimal amount, String externalReference, String payerEmail) {
-        if (properties.getAccessToken() == null || properties.getAccessToken().isBlank()) {
+        boolean semToken = properties.getAccessToken() == null || properties.getAccessToken().isBlank();
+        if (semToken) {
+            if (!properties.isAllowSimulated()) {
+                throw new com.barbearia.saas.exception.NegocioException(
+                        "Pagamento online indisponível. Configure o Mercado Pago (MERCADOPAGO_ACCESS_TOKEN) ou habilite o modo simulado.");
+            }
             String checkoutUrl = publicBaseUrl.replaceAll("/+$", "")
                     + "/api/public/pagamentos/simulado/" + externalReference;
             log.info("[MercadoPago SIMULADO] referencia={} valor={} checkoutUrl={}", externalReference, amount, checkoutUrl);

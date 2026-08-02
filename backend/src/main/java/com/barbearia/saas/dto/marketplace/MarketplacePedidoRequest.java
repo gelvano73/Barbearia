@@ -1,10 +1,10 @@
 package com.barbearia.saas.dto.marketplace;
 
+import com.barbearia.saas.validation.EmailReal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /** DTO de entrada para criar pedido no marketplace. */
@@ -18,7 +18,7 @@ public class MarketplacePedidoRequest {
     @Size(max = 20)
     private String clienteTelefone;
 
-    @Email
+    @EmailReal(optional = true)
     @Size(max = 150)
     private String clienteEmail;
 

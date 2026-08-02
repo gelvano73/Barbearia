@@ -31,4 +31,8 @@ public class ServicoRequest {
     @DecimalMax("100.0")
     @Digits(integer = 3, fraction = 2)
     private BigDecimal comissaoPercentual = BigDecimal.ZERO;
+
+    /** Item da lista LC 116/2003 (ex.: 6.02). */
+    @Size(max = 10)
+    private String codigoListaServico;
 }

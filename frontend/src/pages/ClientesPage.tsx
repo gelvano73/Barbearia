@@ -8,8 +8,9 @@ import Modal from '../components/Modal'
 import FotoField from '../components/FotoField'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { clientesApi } from '../services/resources'
+import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
-const empty = { nome: '', telefone: '', email: '', observacoes: '' }
+const empty = { nome: '', telefone: '', email: '', cpf: '', observacoes: '' }
 
 export default function ClientesPage() {
   const [itens, setItens] = useState([])
@@ -49,6 +50,7 @@ export default function ClientesPage() {
       nome: item.nome || '',
       telefone: item.telefone || '',
       email: item.email || '',
+      cpf: item.cpf || '',
       observacoes: item.observacoes || '',
     })
     setFotoUrl(item.fotoUrl || '')
@@ -60,6 +62,10 @@ export default function ClientesPage() {
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
+    if (form.email?.trim() && !emailRealOk(form.email)) {
+      setError(MSG_EMAIL_INVALIDO)
+      return
+    }
     try {
       if (editing) {
         await clientesApi.atualizar(editing.id, form)
@@ -117,6 +123,7 @@ export default function ClientesPage() {
               <tr>
                 <th>Foto</th>
                 <th>Nome</th>
+                <th>CPF</th>
                 <th>Telefone</th>
                 <th>Email</th>
                 <th></th>
@@ -131,6 +138,7 @@ export default function ClientesPage() {
                     </div>
                   </td>
                   <td>{item.nome}</td>
+                  <td>{item.cpf || '—'}</td>
                   <td>{item.telefone}</td>
                   <td>{item.email || '—'}</td>
                   <td>
@@ -169,8 +177,18 @@ export default function ClientesPage() {
               <input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} required />
             </label>
             <label>
-              Email
-              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              Email (real)
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="nome@provedor.com" />
+            </label>
+            <label>
+              CPF (Receita Federal)
+              <input
+                value={form.cpf}
+                onChange={(e) => setForm({ ...form, cpf: e.target.value })}
+                required={!editing}
+                placeholder="000.000.000-00"
+                inputMode="numeric"
+              />
             </label>
             <label className="full">
               Observações

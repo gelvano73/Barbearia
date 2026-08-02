@@ -1,5 +1,6 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.config.SecurityAppProperties;
 import com.barbearia.saas.domain.entity.*;
 import com.barbearia.saas.domain.enums.Role;
 import com.barbearia.saas.domain.repository.*;
@@ -9,15 +10,14 @@ import com.barbearia.saas.dto.auth.RedefinirSenhaRequest;
 import com.barbearia.saas.dto.auth.RegistroClienteRequest;
 import com.barbearia.saas.exception.NegocioException;
 import com.barbearia.saas.security.JwtService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -43,14 +43,25 @@ class AuthClienteServiceTest {
     @Mock private JwtService jwtService;
     @Mock private AuthenticationManager authenticationManager;
     @Mock private EmailService emailService;
+    @Mock private LoginAttemptService loginAttemptService;
+    @Mock private OtpService otpService;
+    @Mock private EmailDominioService emailDominioService;
+    @Mock private SecurityAppProperties securityAppProperties;
 
     @InjectMocks
     private AuthService authService;
 
+    @BeforeEach
+    void setup() {
+        lenient().doNothing().when(emailDominioService).validarOuFalhar(anyString());
+        lenient().when(securityAppProperties.isExposeDevTokens()).thenReturn(true);
+    }
+
     @Test
     void deveRegistrarCliente() {
         Barbearia barbearia = Barbearia.builder().id(1L).nome("Barba").ativo(true).build();
-        when(usuarioRepository.existsByEmail("cli@teste.com")).thenReturn(false);
+        when(usuarioRepository.existsByEmail("cliente.uat@gmail.com")).thenReturn(false);
+        when(usuarioRepository.existsByCpf("52998224725")).thenReturn(false);
         when(barbeariaRepository.findById(1L)).thenReturn(Optional.of(barbearia));
         when(passwordEncoder.encode(anyString())).thenReturn("hash");
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> {
@@ -69,8 +80,10 @@ class AuthClienteServiceTest {
         request.setBarbeariaId(1L);
         request.setNome("João");
         request.setTelefone("11999999999");
-        request.setEmail("cli@teste.com");
-        request.setSenha("senha123");
+        request.setCpf("529.982.247-25");
+        request.setEmail("cliente.uat@gmail.com");
+        request.setSenha("Senha123");
+        request.setAceitePrivacidade(true);
 
         var response = authService.registrarCliente(request);
 
@@ -116,11 +129,11 @@ class AuthClienteServiceTest {
                 .build();
 
         when(passwordResetTokenRepository.findByTokenAndUsadoFalse("abc123")).thenReturn(Optional.of(token));
-        when(passwordEncoder.encode("novaSenha")).thenReturn("newHash");
+        when(passwordEncoder.encode("NovaSenha1")).thenReturn("newHash");
 
         RedefinirSenhaRequest request = new RedefinirSenhaRequest();
         request.setToken("abc123");
-        request.setNovaSenha("novaSenha");
+        request.setNovaSenha("NovaSenha1");
 
         authService.redefinirSenha(request);
 
@@ -140,7 +153,7 @@ class AuthClienteServiceTest {
 
         RedefinirSenhaRequest request = new RedefinirSenhaRequest();
         request.setToken("exp");
-        request.setNovaSenha("novaSenha");
+        request.setNovaSenha("NovaSenha1");
 
         assertThatThrownBy(() -> authService.redefinirSenha(request))
                 .isInstanceOf(NegocioException.class)

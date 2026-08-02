@@ -32,6 +32,12 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
+    @Column(unique = true, length = 11)
+    private String cpf;
+
+    @Column(length = 20)
+    private String telefone;
+
     @Column(name = "senha_hash", nullable = false)
     private String senhaHash;
 

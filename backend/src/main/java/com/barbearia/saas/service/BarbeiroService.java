@@ -17,6 +17,7 @@ import com.barbearia.saas.dto.portalbarbeiro.MetaProgressoResponse;
 import com.barbearia.saas.exception.NegocioException;
 import com.barbearia.saas.exception.RecursoNaoEncontradoException;
 import com.barbearia.saas.security.SecurityUtils;
+import com.barbearia.saas.util.EmailUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,6 +38,7 @@ public class BarbeiroService {
     private final BarbeiroMetaRepository metaRepository;
     private final PasswordEncoder passwordEncoder;
     private final FotoStorageService fotoStorageService;
+    private final EmailDominioService emailDominioService;
 
     /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
@@ -107,7 +109,8 @@ public class BarbeiroService {
         if (barbeiro.getUsuario() != null) {
             throw new NegocioException("Barbeiro já possui conta de acesso");
         }
-        String email = request.getEmail().toLowerCase().trim();
+        emailDominioService.validarOuFalhar(request.getEmail());
+        String email = EmailUtil.normalizar(request.getEmail());
         if (usuarioRepository.existsByEmail(email)) {
             throw new NegocioException("Email já cadastrado");
         }

@@ -19,14 +19,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Filtro simples de rate limiting em memória (60 requisições/minuto por IP) aplicado às rotas
- * de autenticação, para mitigar força bruta em login/registro.
+ * Rate limiting em rotas de autenticação.
+ * Login/OTP: 10 req/min por IP. Demais /api/auth: 30 req/min.
  */
 @Component
 @Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private static final int LIMITE_POR_JANELA = 60;
+    private static final int LIMITE_LOGIN = 10;
+    private static final int LIMITE_AUTH = 30;
     private static final long JANELA_MS = 60_000L;
 
     private final Map<String, Contador> contadores = new ConcurrentHashMap<>();
@@ -43,28 +44,34 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
+        int limite = isLoginSensivel(path) ? LIMITE_LOGIN : LIMITE_AUTH;
         String ip = resolverIp(request);
-        if (excedeuLimite(ip)) {
+        if (excedeuLimite(ip + "|" + (isLoginSensivel(path) ? "login" : "auth"), limite)) {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write("{\"mensagem\":\"Muitas requisições. Tente novamente em instantes.\"}");
+            response.getWriter().write("{\"mensagem\":\"Muitas tentativas. Aguarde um minuto e tente novamente.\"}");
             return;
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private boolean excedeuLimite(String ip) {
+    private boolean isLoginSensivel(String path) {
+        return path.contains("/login") || path.contains("/otp/") || path.contains("/registro")
+                || path.contains("/recuperar-senha") || path.contains("/redefinir-senha");
+    }
+
+    private boolean excedeuLimite(String chave, int limite) {
         long agora = Instant.now().toEpochMilli();
-        Contador contador = contadores.computeIfAbsent(ip, k -> new Contador(agora));
+        Contador contador = contadores.computeIfAbsent(chave, k -> new Contador(agora));
 
         synchronized (contador) {
             if (agora - contador.inicioJanela > JANELA_MS) {
                 contador.inicioJanela = agora;
                 contador.total.set(0);
             }
-            return contador.total.incrementAndGet() > LIMITE_POR_JANELA;
+            return contador.total.incrementAndGet() > limite;
         }
     }
 
@@ -73,7 +80,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if (forwarded != null && !forwarded.isBlank()) {
             return forwarded.split(",")[0].trim();
         }
-        return request.getRemoteAddr();
+        return request.getRemoteAddr() != null ? request.getRemoteAddr() : "unknown";
     }
 
     private static final class Contador {

@@ -33,7 +33,7 @@ spring:
 server:
   port: ${PORT:8080}
   error:
-    include-message: always
+    include-message: ${ERROR_INCLUDE_MESSAGE:never}
 
 app:
   jwt:
@@ -42,12 +42,14 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
   oauth:
-    dev-mode: ${OAUTH_DEV_MODE:true}
+    dev-mode: ${OAUTH_DEV_MODE:false}
   upload:
     dir: ${UPLOAD_DIR:uploads}
   public-base-url: ${PUBLIC_BASE_URL:http://localhost:5173}
   mail:
     from: ${MAIL_FROM:no-reply@barbearia.app}
+  security:
+    expose-dev-tokens: ${EXPOSE_DEV_TOKENS:false}
   assinatura:
     trial-dias: ${ASSINATURA_TRIAL_DIAS:14}
   storage:
@@ -65,6 +67,7 @@ app:
     webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:}
     public-key: ${MERCADOPAGO_PUBLIC_KEY:}
     notification-url: ${MERCADOPAGO_NOTIFICATION_URL:}
+    allow-simulated: ${MERCADOPAGO_ALLOW_SIMULATED:false}
   backup:
     enabled: ${BACKUP_ENABLED:true}
     cron: ${BACKUP_CRON:0 0 3 * * *}
@@ -83,6 +86,18 @@ app:
     app-secret: ${WHATSAPP_APP_SECRET:}
     default-barbearia-id: ${WHATSAPP_BARBEARIA_ID:1}
     simular-envio: ${WHATSAPP_SIMULAR:true}
+  nfse:
+    enabled: ${NFSE_ENABLED:false}
+    token: ${NFSE_TOKEN:}
+    ambiente: ${NFSE_AMBIENTE:homologacao}
+    base-url-homologacao: ${NFSE_BASE_URL_HOMOLOG:https://homologacao.focusnfe.com.br}
+    base-url-producao: ${NFSE_BASE_URL_PROD:https://api.focusnfe.com.br}
+    rejeitar-cpf-exemplo: ${NFSE_REJEITAR_CPF_EXEMPLO:true}
+    auto-emitir: ${NFSE_AUTO_EMITIR:true}
+  email:
+    validar-dns: ${EMAIL_VALIDAR_DNS:true}
+    dns-timeout-ms: ${EMAIL_DNS_TIMEOUT_MS:2500}
+    dns-cache-minutos: ${EMAIL_DNS_CACHE_MINUTOS:60}
 
 sentry:
   dsn: ${SENTRY_DSN:}

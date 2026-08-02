@@ -59,6 +59,7 @@ public class ServicoService {
                 .preco(request.getPreco())
                 .duracaoMinutos(request.getDuracaoMinutos())
                 .comissaoPercentual(defaultComissao(request.getComissaoPercentual()))
+                .codigoListaServico(blankToNull(request.getCodigoListaServico()))
                 .ativo(true)
                 .build();
 
@@ -80,6 +81,7 @@ public class ServicoService {
         servico.setPreco(request.getPreco());
         servico.setDuracaoMinutos(request.getDuracaoMinutos());
         servico.setComissaoPercentual(defaultComissao(request.getComissaoPercentual()));
+        servico.setCodigoListaServico(blankToNull(request.getCodigoListaServico()));
         return toResponse(servicoRepository.save(servico));
     }
 
@@ -104,6 +106,7 @@ public class ServicoService {
                 .preco(servico.getPreco())
                 .duracaoMinutos(servico.getDuracaoMinutos())
                 .comissaoPercentual(servico.getComissaoPercentual())
+                .codigoListaServico(servico.getCodigoListaServico())
                 .ativo(servico.getAtivo())
                 .build();
     }

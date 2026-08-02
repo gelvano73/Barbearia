@@ -1,7 +1,7 @@
 package com.barbearia.saas.dto.auth;
 
+import com.barbearia.saas.validation.SenhaForte;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 /** DTO de entrada para redefinir a senha com token. */
@@ -12,6 +12,6 @@ public class RedefinirSenhaRequest {
     private String token;
 
     @NotBlank
-    @Size(min = 6, max = 100)
+    @SenhaForte
     private String novaSenha;
 }

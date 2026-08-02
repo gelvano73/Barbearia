@@ -3,12 +3,14 @@ package com.barbearia.saas.controller;
 import com.barbearia.saas.domain.entity.Pagamento;
 import com.barbearia.saas.domain.enums.StatusPagamento;
 import com.barbearia.saas.domain.repository.PagamentoRepository;
+import com.barbearia.saas.event.PagamentoConfirmadoEvent;
 import com.barbearia.saas.service.AssinaturaService;
 import com.barbearia.saas.service.MercadoPagoClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ public class MercadoPagoWebhookController {
     private final MercadoPagoClient mercadoPagoClient;
     private final PagamentoRepository pagamentoRepository;
     private final AssinaturaService assinaturaService;
+    private final ApplicationEventPublisher eventPublisher;
 
     /** Recebe a notificação do Mercado Pago e atualiza o pagamento ou assinatura correspondente. */
     @PostMapping
@@ -74,6 +77,9 @@ public class MercadoPagoWebhookController {
         pagamento.setGatewayStatus(status != null ? String.valueOf(status) : null);
         if ("approved".equals(status) && pagamento.getStatus() == StatusPagamento.PENDENTE) {
             pagamento.setStatus(StatusPagamento.PAGO);
+            pagamentoRepository.save(pagamento);
+            eventPublisher.publishEvent(new PagamentoConfirmadoEvent(this, pagamento.getId()));
+            return;
         } else if (("rejected".equals(status) || "cancelled".equals(status))
                 && pagamento.getStatus() == StatusPagamento.PENDENTE) {
             pagamento.setStatus(StatusPagamento.CANCELADO);

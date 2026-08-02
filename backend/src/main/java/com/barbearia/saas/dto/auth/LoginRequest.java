@@ -1,16 +1,17 @@
 package com.barbearia.saas.dto.auth;
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-/** DTO de entrada com credenciais de login (e-mail e senha). */
+/** Credenciais de login: e-mail ou CPF + senha. */
 @Data
 public class LoginRequest {
 
-    @NotBlank
-    @Email
-    private String email;
+    /** E-mail ou CPF (aceita também o campo legado "email" no JSON). */
+    @NotBlank(message = "Informe e-mail ou CPF")
+    @JsonAlias("email")
+    private String login;
 
     @NotBlank
     private String senha;

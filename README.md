@@ -328,7 +328,7 @@ POST /api/auth/registro
   "nomeBarbearia": "Barba Fina",
   "nomeAdmin": "Carlos Admin",
   "email": "admin@barbafina.com",
-  "senha": "senha123",
+  "senha": "SenhaUat1",
   "telefoneBarbearia": "11999999999"
 }
 ```
@@ -340,7 +340,7 @@ POST /api/auth/cliente/registro
   "nome": "João Cliente",
   "telefone": "11988887777",
   "email": "joao@email.com",
-  "senha": "senha123"
+  "senha": "SenhaUat1"
 }
 ```
 

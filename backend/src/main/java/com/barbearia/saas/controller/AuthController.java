@@ -61,6 +61,20 @@ public class AuthController {
         return ResponseEntity.ok(authService.loginRecepcao(request));
     }
 
+    /** Envia código OTP para telefone cadastrado. */
+    @PostMapping("/otp/enviar")
+    @Operation(summary = "Enviar código OTP para telefone cadastrado")
+    public ResponseEntity<java.util.Map<String, Object>> enviarOtp(@Valid @RequestBody OtpEnviarRequest request) {
+        return ResponseEntity.ok(authService.enviarOtp(request));
+    }
+
+    /** Valida OTP e autentica. */
+    @PostMapping("/otp/verificar")
+    @Operation(summary = "Validar OTP e obter JWT")
+    public ResponseEntity<AuthResponse> verificarOtp(@Valid @RequestBody OtpVerificarRequest request) {
+        return ResponseEntity.ok(authService.verificarOtp(request));
+    }
+
     /** Cria um usuário com perfil de atendente. */
     @PostMapping("/recepcao/atendente")
     @Operation(summary = "Criar conta de recepcionista (admin)")

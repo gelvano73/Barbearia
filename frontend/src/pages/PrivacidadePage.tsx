@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-const ATUALIZADO_EM = '18 de julho de 2026'
+const ATUALIZADO_EM = '2 de agosto de 2026 (NFS-e)'
 const STORAGE_KEY = 'barba_aceite_privacidade'
 
 export default function PrivacidadePage() {
@@ -89,10 +89,17 @@ export default function PrivacidadePage() {
 
           <h3>2.1 Dados de cadastro e conta</h3>
           <ul>
-            <li>Nome, e-mail, telefone e senha (armazenada de forma criptografada/hash).</li>
+            <li>
+              Nome, e-mail real e ativo, CPF, telefone e senha (hash BCrypt). E-mails
+              temporários/descartáveis não são aceitos; o domínio pode ser verificado via DNS.
+            </li>
             <li>Dados da barbearia: nome, telefone, CNPJ (quando informado) e unidades.</li>
             <li>Papel de acesso: administrador, atendente, barbeiro ou cliente.</li>
             <li>Foto de perfil (cliente e barbeiro), quando enviada voluntariamente.</li>
+            <li>
+              Códigos temporários de acesso (OTP) enviados ao telefone cadastrado para autenticação
+              alternativa, com validade limitada.
+            </li>
           </ul>
 
           <h3>2.2 Dados operacionais da barbearia</h3>
@@ -143,7 +150,45 @@ export default function PrivacidadePage() {
               Logs de aplicação, endereço IP e metadados técnicos eventualmente registrados
               para segurança, diagnóstico e auditoria.
             </li>
+            <li>
+              Contadores de tentativas de login e bloqueios temporários para prevenção de
+              ataques de força bruta.
+            </li>
           </ul>
+          <h3>2.6 Dados fiscais (NFS-e)</h3>
+          <ul>
+            <li>
+              CPF do tomador (cliente) e CNPJ/inscrição municipal do prestador (barbearia),
+              necessários à emissão de Nota Fiscal de Serviços Eletrônica conforme regras da
+              Receita Federal e legislação municipal do ISS.
+            </li>
+            <li>
+              Dados da nota (número, código de verificação, valor, discriminação do serviço e
+              status de autorização junto ao provedor/prefeitura).
+            </li>
+            <li>
+              O CPF informado deve ser válido pelos dígitos verificadores oficiais e
+              corresponder ao titular real do serviço — CPFs fictícios ou de demonstração
+              não são aceitos para emissão.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>2A. Segurança da informação</h2>
+          <p>Adotamos medidas técnicas e organizacionais proporcionais, incluindo:</p>
+          <ul>
+            <li>Senhas com política de complexidade e armazenamento em hash (BCrypt).</li>
+            <li>Login por e-mail ou CPF, com opção de código temporário no telefone cadastrado.</li>
+            <li>Limitação de requisições (rate limit) e bloqueio após tentativas inválidas.</li>
+            <li>Uso de consultas parametrizadas (proteção contra SQL Injection).</li>
+            <li>Cabeçalhos HTTP de segurança (anti-clickjacking, MIME sniffing, HSTS quando HTTPS).</li>
+            <li>Comunicação com a API preferencialmente via HTTPS em produção.</li>
+          </ul>
+          <p>
+            Nenhum sistema é 100% invulnerável. Em caso de incidente relevante, adotaremos
+            medidas de contenção e comunicação conforme a LGPD.
+          </p>
         </section>
 
         <section>
@@ -156,7 +201,7 @@ export default function PrivacidadePage() {
             <li>Permitir venda de produtos online (marketplace) e gestão de franquias/unidades.</li>
             <li>Realizar check-in por reconhecimento facial, quando autorizado.</li>
             <li>Atender clientes via WhatsApp e assistentes de IA, quando habilitados.</li>
-            <li>Cumprir obrigações legais, prevenir fraudes e garantir a segurança da Plataforma.</li>
+            <li>Cumprir obrigações legais e fiscais (incluindo emissão de NFS-e quando habilitada).</li>
             <li>Melhorar a experiência e a estabilidade do serviço (suporte e correção de falhas).</li>
           </ul>
         </section>

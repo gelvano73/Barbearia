@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Modal from '../components/Modal'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
-import { clientesApi, pagamentosApi, servicosApi } from '../services/resources'
+import { clientesApi, fiscalApi, pagamentosApi, servicosApi } from '../services/resources'
 
 const FORMAS = [
   { value: 'PIX', label: 'PIX' },
@@ -180,6 +180,27 @@ export default function PagamentosPage() {
                         <button className="btn secondary small" type="button" onClick={() => abrirRecibo(item.id)}>
                           Recibo
                         </button>
+                        {item.status === 'PAGO' && (
+                          <button
+                            className="btn secondary small"
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                setError('')
+                                const { data } = await fiscalApi.emitir(item.id)
+                                alert(
+                                  data.status === 'AUTORIZADA' || data.numero
+                                    ? `NFS-e ${data.numero || data.status}`
+                                    : `NFS-e: ${data.status}${data.mensagemErro ? ' — ' + data.mensagemErro : ''}`,
+                                )
+                              } catch (err) {
+                                setError(err.response?.data?.mensagem || 'Falha ao emitir NFS-e')
+                              }
+                            }}
+                          >
+                            NFS-e
+                          </button>
+                        )}
                         <button className="btn danger small" type="button" onClick={() => cancelar(item.id)}>
                           Cancelar
                         </button>

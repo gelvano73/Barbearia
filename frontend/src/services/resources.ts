@@ -13,6 +13,8 @@ export const authApi = {
   loginBarbeiro: (payload) => api.post('/auth/barbeiro/login', payload),
   loginRecepcao: (payload) => api.post('/auth/recepcao/login', payload),
   criarAtendente: (payload) => api.post('/auth/recepcao/atendente', payload),
+  enviarOtp: (payload) => api.post('/auth/otp/enviar', payload),
+  verificarOtp: (payload) => api.post('/auth/otp/verificar', payload),
   recuperarSenha: (payload) => api.post('/auth/recuperar-senha', payload),
   redefinirSenha: (payload) => api.post('/auth/redefinir-senha', payload),
   oauth: (provider, payload) => api.post(`/auth/oauth/${provider}`, payload),
@@ -76,6 +78,16 @@ export const pagamentosApi = {
   criarOnline: (payload) => api.post('/pagamentos/online', payload),
   reciboUrl: (id) => `/api/pagamentos/${id}/recibo`,
   cancelar: (id) => api.delete(`/pagamentos/${id}`),
+}
+
+/** NFS-e e configuração fiscal do prestador. */
+export const fiscalApi = {
+  config: () => api.get('/fiscal/config'),
+  salvarConfig: (payload) => api.put('/fiscal/config', payload),
+  listarNotas: () => api.get('/fiscal/notas'),
+  porPagamento: (pagamentoId) => api.get(`/fiscal/notas/pagamento/${pagamentoId}`),
+  emitir: (pagamentoId) => api.post(`/fiscal/notas/pagamento/${pagamentoId}/emitir`),
+  consultarNota: (id) => api.post(`/fiscal/notas/${id}/consultar`),
 }
 
 /** Assinatura SaaS do tenant. */

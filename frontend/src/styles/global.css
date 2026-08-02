@@ -448,6 +448,29 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.9rem;
 }
 
+.success {
+  color: #3d8f6a;
+  font-size: 0.9rem;
+}
+
+.banner {
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.92rem;
+}
+
+.banner.ok {
+  border-color: rgba(61, 143, 106, 0.45);
+  background: rgba(61, 143, 106, 0.12);
+}
+
+.banner.warn {
+  border-color: rgba(196, 140, 74, 0.45);
+  background: rgba(196, 140, 74, 0.12);
+}
+
 .empty {
   color: var(--muted);
   padding: 1rem 0.25rem;

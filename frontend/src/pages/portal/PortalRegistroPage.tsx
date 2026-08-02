@@ -6,6 +6,7 @@ import { Link, Navigate } from 'react-router-dom'
 import AceitePrivacidade from '../../components/AceitePrivacidade'
 import { useAuth } from '../../context/AuthContext'
 import { authApi } from '../../services/resources'
+import { emailRealOk, MSG_EMAIL_INVALIDO } from '../../utils/email'
 
 export default function PortalRegistroPage() {
   const { isAuthenticated, isCliente, registroCliente } = useAuth()
@@ -15,6 +16,7 @@ export default function PortalRegistroPage() {
     barbeariaId: '',
     nome: '',
     telefone: '',
+    cpf: '',
     email: '',
     senha: '',
   })
@@ -64,8 +66,16 @@ export default function PortalRegistroPage() {
       setError('Selecione a barbearia.')
       return
     }
-    if (form.senha.length < 6) {
-      setError('A senha deve ter no mínimo 6 caracteres.')
+    if (!emailRealOk(form.email)) {
+      setError(MSG_EMAIL_INVALIDO)
+      return
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(form.senha)) {
+      setError('A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula e número.')
+      return
+    }
+    if (!form.cpf.replace(/\D/g, '').match(/^\d{11}$/)) {
+      setError('Informe um CPF válido com 11 dígitos.')
       return
     }
     if (!aceitePrivacidade) {
@@ -136,18 +146,30 @@ export default function PortalRegistroPage() {
             <input name="telefone" value={form.telefone} onChange={onChange} required />
           </label>
           <label>
-            Email
-            <input type="email" name="email" value={form.email} onChange={onChange} required />
+            CPF
+            <input
+              name="cpf"
+              value={form.cpf}
+              onChange={onChange}
+              required
+              placeholder="000.000.000-00"
+              inputMode="numeric"
+              autoComplete="off"
+            />
           </label>
           <label>
-            Senha (mín. 6)
+            Email (real)
+            <input type="email" name="email" value={form.email} onChange={onChange} required placeholder="voce@provedor.com" />
+          </label>
+          <label>
+            Senha (mín. 8, maiúscula, minúscula e número)
             <input
               type="password"
               name="senha"
               value={form.senha}
               onChange={onChange}
               required
-              minLength={6}
+              minLength={8}
             />
           </label>
           <AceitePrivacidade checked={aceitePrivacidade} onChange={setAceitePrivacidade} />

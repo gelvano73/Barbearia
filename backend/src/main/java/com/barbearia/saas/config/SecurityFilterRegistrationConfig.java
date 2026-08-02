@@ -27,6 +27,11 @@ public class SecurityFilterRegistrationConfig {
         return disabled(filter);
     }
 
+    @Bean
+    public FilterRegistrationBean<SecurityHeadersFilter> securityHeadersFilterRegistration(SecurityHeadersFilter filter) {
+        return disabled(filter);
+    }
+
     private static <T extends jakarta.servlet.Filter> FilterRegistrationBean<T> disabled(T filter) {
         FilterRegistrationBean<T> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
