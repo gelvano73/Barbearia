@@ -113,6 +113,9 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
 
 springdoc:
   api-docs:
