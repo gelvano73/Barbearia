@@ -1,18 +1,16 @@
-# Web (frontend) — usado pelo serviço Railway "web" na raiz do monorepo
-FROM node:22-alpine AS build
+# API (backend) — serviço Railway "api" na raiz do monorepo
+FROM maven:3.9.8-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
-COPY frontend/ .
-ARG VITE_API_URL=/api
-ENV VITE_API_URL=$VITE_API_URL
-RUN npm run build
+COPY backend/pom.xml .
+RUN mvn -q -B dependency:go-offline
+COPY backend/src ./src
+RUN mvn -q -B package -DskipTests
 
-FROM nginx:1.27-alpine
-RUN apk add --no-cache gettext
-COPY frontend/nginx.conf.template /etc/nginx/conf.d/default.conf.template
-COPY frontend/docker-entrypoint.sh /docker-entrypoint-app.sh
-RUN sed -i 's/\r$//' /docker-entrypoint-app.sh && chmod +x /docker-entrypoint-app.sh
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
-ENTRYPOINT ["/docker-entrypoint-app.sh"]
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+RUN mkdir -p /app/uploads /app/backups /app/logs
+COPY --from=build /app/target/barbearia-saas-1.0.0.jar app.jar
+COPY backend/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /app/docker-entrypoint.sh && chmod +x /app/docker-entrypoint.sh
+EXPOSE 8080
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
