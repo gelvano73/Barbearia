@@ -345,7 +345,7 @@ public class AuthService {
 
         log.info("Token de recuperação de senha gerado para usuário id={}", usuario.getId());
 
-        String link = publicBaseUrl.replaceAll("/+$", "") + "/portal/recuperar-senha?token=" + token;
+        String link = publicBaseUrl.replaceAll("/+$", "") + "/recuperar-senha?token=" + token;
         boolean enviado = emailService.send(
                 usuario.getBarbearia() != null ? usuario.getBarbearia().getId() : null,
                 email,

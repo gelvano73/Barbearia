@@ -9,6 +9,7 @@ import PortalLayout from './components/PortalLayout'
 import BarbeiroLayout from './components/BarbeiroLayout'
 import RecepcaoLayout from './components/RecepcaoLayout'
 import AuthPage from './pages/AuthPage'
+import RecuperarSenhaPage from './pages/RecuperarSenhaPage'
 import DashboardPage from './pages/DashboardPage'
 import ClientesPage from './pages/ClientesPage'
 import BarbeirosPage from './pages/BarbeirosPage'
@@ -58,7 +59,7 @@ import RecepcaoPagamentosPage from './pages/recepcao/RecepcaoPagamentosPage'
 import RecepcaoCaixaPage from './pages/recepcao/RecepcaoCaixaPage'
 import PrivacidadePage from './pages/PrivacidadePage'
 
-// Define a home padrão conforme o papel do usuário autenticado
+/** === Guards de rota === */
 function homeForRole(auth) {
   if (auth?.role === 'CLIENTE') return '/portal'
   if (auth?.role === 'BARBEIRO') return '/barbeiro'
@@ -66,7 +67,6 @@ function homeForRole(auth) {
   return '/'
 }
 
-// Protege rotas do painel admin/staff; redireciona clientes, barbeiros e atendentes
 function StaffRoute({ children }) {
   const { isAuthenticated, isCliente, isBarbeiro, isAtendente } = useAuth()
   if (!isAuthenticated) return <Navigate to="/auth" replace />
@@ -76,7 +76,6 @@ function StaffRoute({ children }) {
   return children
 }
 
-// Protege rotas do portal do cliente
 function ClienteRoute({ children }) {
   const { isAuthenticated, isCliente, auth } = useAuth()
   if (!isAuthenticated) return <Navigate to="/portal/login" replace />
@@ -84,7 +83,6 @@ function ClienteRoute({ children }) {
   return children
 }
 
-// Protege rotas do portal do barbeiro
 function BarbeiroRoute({ children }) {
   const { isAuthenticated, isBarbeiro, auth } = useAuth()
   if (!isAuthenticated) return <Navigate to="/barbeiro/login" replace />
@@ -92,7 +90,6 @@ function BarbeiroRoute({ children }) {
   return children
 }
 
-// Protege rotas da recepção (atendente ou admin)
 function RecepcaoRoute({ children }) {
   const { isAuthenticated, isAtendente, isAdmin, auth } = useAuth()
   if (!isAuthenticated) return <Navigate to="/recepcao/login" replace />
@@ -103,17 +100,20 @@ function RecepcaoRoute({ children }) {
 export default function App() {
   return (
     <Routes>
+      {/* === Rotas públicas === */}
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
       <Route path="/privacidade" element={<PrivacidadePage />} />
       <Route path="/loja/:barbeariaId" element={<LojaPublicaPage />} />
 
+      {/* === Auth dos portais === */}
       <Route path="/portal/login" element={<PortalLoginPage />} />
       <Route path="/portal/registro" element={<PortalRegistroPage />} />
       <Route path="/portal/recuperar-senha" element={<PortalRecuperarSenhaPage />} />
-
       <Route path="/barbeiro/login" element={<BarbeiroLoginPage />} />
       <Route path="/recepcao/login" element={<RecepcaoLoginPage />} />
 
+      {/* === Portal do cliente === */}
       <Route
         path="/portal"
         element={
@@ -131,6 +131,7 @@ export default function App() {
         <Route path="fidelidade" element={<PortalFidelidadePage />} />
       </Route>
 
+      {/* === Portal do barbeiro === */}
       <Route
         path="/barbeiro"
         element={
@@ -150,6 +151,7 @@ export default function App() {
         <Route path="perfil" element={<BarbeiroPerfilPage />} />
       </Route>
 
+      {/* === Recepção === */}
       <Route
         path="/recepcao"
         element={
@@ -166,6 +168,7 @@ export default function App() {
         <Route path="caixa" element={<RecepcaoCaixaPage />} />
       </Route>
 
+      {/* === Painel admin === */}
       <Route
         path="/"
         element={

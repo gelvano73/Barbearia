@@ -3,11 +3,12 @@
  * Login por e-mail/CPF + senha forte, ou código OTP no telefone.
  */
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import AceitePrivacidade from '../components/AceitePrivacidade'
 import { useAuth } from '../context/AuthContext'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
+/** === Validação local === */
 function senhaForteOk(senha: string) {
   return (
     senha.length >= 8 &&
@@ -20,6 +21,8 @@ function senhaForteOk(senha: string) {
 export default function AuthPage() {
   const { isAuthenticated, isCliente, isBarbeiro, isAtendente, login, registro, enviarOtp, loginOtp } =
     useAuth()
+
+  /** === Estado === */
   const [mode, setMode] = useState('login')
   const [otpMode, setOtpMode] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
@@ -39,6 +42,7 @@ export default function AuthPage() {
     cnpj: '',
   })
 
+  /** === Redirecionamentos === */
   if (isAuthenticated && isCliente) return <Navigate to="/portal" replace />
   if (isAuthenticated && isBarbeiro) return <Navigate to="/barbeiro" replace />
   if (isAuthenticated && isAtendente) return <Navigate to="/recepcao" replace />
@@ -46,6 +50,7 @@ export default function AuthPage() {
 
   const onChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
 
+  /** === Submit login / registro / OTP === */
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -101,6 +106,7 @@ export default function AuthPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        {/* === Cabeçalho === */}
         <div className="brand">
           BARBA
           <span>SAAS</span>
@@ -108,6 +114,7 @@ export default function AuthPage() {
         <h1>{mode === 'login' ? 'Acesse sua barbearia' : 'Abra sua conta'}</h1>
         <p className="subtitle">Gestão de clientes, equipe e agenda em um só lugar.</p>
 
+        {/* === Formulário === */}
         <form onSubmit={onSubmit}>
           {mode === 'registro' && (
             <>
@@ -185,6 +192,7 @@ export default function AuthPage() {
           </button>
         </form>
 
+        {/* === Alternativas de acesso === */}
         {mode === 'login' && (
           <button
             type="button"
@@ -204,9 +212,14 @@ export default function AuthPage() {
 
         <div className="auth-toggle">
           {mode === 'login' ? (
-            <button type="button" onClick={() => setMode('registro')}>
-              Abrir conta
-            </button>
+            <>
+              <button type="button" onClick={() => setMode('registro')}>
+                Abrir conta
+              </button>
+              <div style={{ marginTop: '0.65rem' }}>
+                <Link to="/recuperar-senha">Esqueci minha senha</Link>
+              </div>
+            </>
           ) : (
             <button type="button" onClick={() => setMode('login')}>
               Já tenho conta
