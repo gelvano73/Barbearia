@@ -26,6 +26,8 @@ public class AssinaturaService {
     private final BarbeariaRepository barbeariaRepository;
     private final MercadoPagoClient mercadoPagoClient;
 
+    /** === Consultas === */
+
     /** Retorna a situação atual da assinatura da barbearia autenticada. */
     @Transactional(readOnly = true)
     public AssinaturaResponse getStatus() {
@@ -33,6 +35,8 @@ public class AssinaturaService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Barbearia não encontrada"));
         return toResponse(barbearia);
     }
+
+    /** === Upgrade e pagamento === */
 
     /** Inicia checkout de upgrade de plano (Mercado Pago ou simulado). */
     @Transactional
@@ -109,6 +113,8 @@ public class AssinaturaService {
         });
     }
 
+    /** === Conversões === */
+
     /** Converte a entidade em DTO de resposta, calculando dias restantes até o vencimento. */
     public AssinaturaResponse toResponse(Barbearia barbearia) {
         LocalDateTime venceEm = barbearia.getAssinaturaVenceEm();
@@ -125,6 +131,8 @@ public class AssinaturaService {
                 .diasRestantes(diasRestantes)
                 .build();
     }
+
+    /** === Bloqueio e reativação === */
 
     /** Bloqueia a assinatura da barbearia (ex.: inadimplência confirmada pelo gateway). */
     @Transactional
@@ -144,11 +152,13 @@ public class AssinaturaService {
         });
     }
 
+    /** === Auxiliares === */
+
     private BigDecimal precoMensal(PlanoAssinatura plano) {
         return switch (plano) {
-            case BASIC -> new BigDecimal("79.90");
-            case PRO -> new BigDecimal("149.90");
-            case ENTERPRISE -> new BigDecimal("299.90");
+            case BASIC -> new BigDecimal("97.90");
+            case PRO -> new BigDecimal("197.90");
+            case ENTERPRISE -> new BigDecimal("397.90");
             default -> throw new NegocioException("Plano inválido");
         };
     }

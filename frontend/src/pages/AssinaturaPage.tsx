@@ -3,21 +3,18 @@
  */
 import { useEffect, useState } from 'react'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
+import { PLANOS_PAGOS, TAXA_IMPLANTACAO_LABEL, TRIAL_INFO } from '../data/planos'
 import { assinaturaApi, backupApi } from '../services/resources'
 
-const PLANOS = [
-  { id: 'BASIC', nome: 'Basic', valor: 'R$ 79,90/mês' },
-  { id: 'PRO', nome: 'Pro', valor: 'R$ 149,90/mês' },
-  { id: 'ENTERPRISE', nome: 'Enterprise', valor: 'R$ 299,90/mês' },
-]
-
 export default function AssinaturaPage() {
+  /** === Estado === */
   const [data, setData] = useState(null)
   const [backups, setBackups] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
 
+  /** === Carga e ações === */
   const carregar = async () => {
     const [assinatura, listaBackup] = await Promise.all([
       assinaturaApi.status(),
@@ -66,10 +63,11 @@ export default function AssinaturaPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Assinatura</h1>
-          <p>Plano SaaS, upgrade e backups</p>
+          <p>Planos Barba SaaS — escolha o pacote da sua barbearia</p>
         </div>
         <button className="btn secondary" type="button" disabled={busy} onClick={executarBackup}>
           Executar backup
@@ -78,11 +76,12 @@ export default function AssinaturaPage() {
 
       {error && <div className="error">{error}</div>}
 
+      {/* === Status do plano === */}
       {data && (
         <div className="panel">
           <div className="form-grid">
             <div>
-              <strong>Plano</strong>
+              <strong>Plano atual</strong>
               <div>{data.plano || 'TRIAL'}</div>
             </div>
             <div>
@@ -104,33 +103,60 @@ export default function AssinaturaPage() {
               <div>{data.diasRestantes ?? '—'}</div>
             </div>
           </div>
+          {data.plano === 'TRIAL' && (
+            <p className="subtitle" style={{ margin: '0.75rem 0 0' }}>
+              {TRIAL_INFO.descricao} Depois, escolha Basic, Pro ou Enterprise.
+            </p>
+          )}
         </div>
       )}
 
+      {/* === Tabela comercial === */}
       <div className="panel" style={{ marginTop: '1rem' }}>
-        <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Upgrade de plano</h2>
-        <p className="empty" style={{ marginBottom: '1rem' }}>
-          Sem `MERCADOPAGO_ACCESS_TOKEN`, o checkout abre em modo simulado e ativa o plano ao confirmar.
+        <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Tabela de planos</h2>
+        <p className="subtitle" style={{ marginTop: 0 }}>
+          Implantação opcional: {TAXA_IMPLANTACAO_LABEL}. Mensalidade cobrada via Mercado Pago.
         </p>
-        <div className="form-grid">
-          {PLANOS.map((p) => (
-            <div key={p.id}>
-              <strong>{p.nome}</strong>
-              <div>{p.valor}</div>
+        <div className="planos-grid">
+          {PLANOS_PAGOS.map((p) => (
+            <article
+              key={p.id}
+              className={`plano-card${p.destaque ? ' destaque' : ''}${data?.plano === p.id ? ' atual' : ''}`}
+            >
+              {p.destaque && <div className="plano-selo">Mais escolhido</div>}
+              <h3>{p.nome}</h3>
+              <p className="plano-preco">{p.precoLabel}</p>
+              <p className="subtitle">{p.descricao}</p>
+
+              <strong className="plano-bloco-titulo">Limites</strong>
+              <ul className="plano-lista">
+                {p.limites.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+
+              <strong className="plano-bloco-titulo">Inclui</strong>
+              <ul className="plano-lista">
+                {p.recursos.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+
               <button
                 className="btn"
                 type="button"
-                style={{ marginTop: '0.5rem' }}
+                style={{ marginTop: 'auto', width: '100%' }}
                 disabled={busy || data?.plano === p.id}
                 onClick={() => upgrade(p.id)}
               >
-                {data?.plano === p.id ? 'Plano atual' : 'Assinar'}
+                {data?.plano === p.id ? 'Plano atual' : `Assinar ${p.nome}`}
               </button>
-            </div>
+            </article>
           ))}
         </div>
       </div>
 
+      {/* === Backups === */}
       <div className="panel" style={{ marginTop: '1rem' }}>
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Backups recentes</h2>
         {backups.length === 0 ? (
