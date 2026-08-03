@@ -105,6 +105,8 @@ class AuthClienteServiceTest {
                 .build();
         when(usuarioRepository.findByEmail("cli@teste.com")).thenReturn(Optional.of(usuario));
         when(passwordResetTokenRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(emailService.send(any(), anyString(), anyString(), anyString())).thenReturn(true);
+        when(emailService.isConfigurado()).thenReturn(true);
 
         RecuperarSenhaRequest request = new RecuperarSenhaRequest();
         request.setEmail("cli@teste.com");

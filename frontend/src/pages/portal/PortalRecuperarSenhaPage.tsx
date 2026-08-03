@@ -1,5 +1,6 @@
 /**
  * Fluxo de recuperação e redefinição de senha do cliente.
+ * Solicita token por e-mail e conclui a troca de senha.
  */
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -7,6 +8,7 @@ import { authApi } from '../../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../../utils/email'
 
 export default function PortalRecuperarSenhaPage() {
+  /** === Estado === */
   const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [token, setToken] = useState('')
@@ -16,6 +18,7 @@ export default function PortalRecuperarSenhaPage() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
+  /** === Token na URL === */
   useEffect(() => {
     const t = searchParams.get('token')
     if (t) {
@@ -25,6 +28,7 @@ export default function PortalRecuperarSenhaPage() {
     }
   }, [searchParams])
 
+  /** === Solicitar e redefinir === */
   const solicitar = async (e) => {
     e.preventDefault()
     setError('')
@@ -38,6 +42,11 @@ export default function PortalRecuperarSenhaPage() {
       if (data.tokenDev) setToken(data.tokenDev)
       setMessage(data.mensagem || 'Verifique seu e-mail para o link de redefinição.')
       setStep(2)
+      if (data.emailEnviado === false && data.smtpConfigurado === false && !data.tokenDev) {
+        setError(
+          'O servidor ainda não tem SMTP configurado. Peça ao administrador para definir MAIL_HOST/MAIL_USERNAME/MAIL_PASSWORD.',
+        )
+      }
     } catch (err) {
       setError(err.response?.data?.mensagem || 'Falha ao solicitar recuperação')
     }
@@ -58,6 +67,7 @@ export default function PortalRecuperarSenhaPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        {/* === Cabeçalho === */}
         <div className="brand">
           BARBA
           <span>PORTAL</span>
@@ -65,6 +75,7 @@ export default function PortalRecuperarSenhaPage() {
         <h1>Recuperar senha</h1>
         <p className="subtitle">Enviaremos um link para o e-mail cadastrado.</p>
 
+        {/* === Passo 1: solicitar === */}
         {step === 1 && (
           <form onSubmit={solicitar}>
             <label>
@@ -76,6 +87,7 @@ export default function PortalRecuperarSenhaPage() {
           </form>
         )}
 
+        {/* === Passo 2: redefinir === */}
         {step === 2 && (
           <form onSubmit={redefinir}>
             {message && <p className="subtitle">{message}</p>}
@@ -101,6 +113,7 @@ export default function PortalRecuperarSenhaPage() {
           </form>
         )}
 
+        {/* === Passo 3: concluído === */}
         {step === 3 && (
           <div>
             <p>{message}</p>

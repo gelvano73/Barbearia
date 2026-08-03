@@ -29,6 +29,13 @@ spring:
           auth: true
           starttls:
             enable: true
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
+# Exemplos SMTP:
+#   Gmail: MAIL_HOST=smtp.gmail.com MAIL_PORT=587 + senha de app
+#   Outlook: MAIL_HOST=smtp.office365.com MAIL_PORT=587
+#   SendGrid: MAIL_HOST=smtp.sendgrid.net MAIL_USERNAME=apikey MAIL_PASSWORD=<api-key>
 
 server:
   port: ${PORT:8080}

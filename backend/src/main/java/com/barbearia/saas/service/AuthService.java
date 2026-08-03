@@ -28,7 +28,10 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
-/** Autenticação, registro de usuários/clientes, OAuth e reset de senha. */
+/**
+ * Autenticação e ciclo de vida de contas: registro (barbearia/cliente/atendente),
+ * login por papel, OTP, OAuth (dev) e recuperação de senha com JWT.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -58,6 +61,8 @@ public class AuthService {
 
     @Value("${app.assinatura.trial-dias:14}")
     private int trialDias;
+
+    /** === Registro === */
 
     /** Registra uma nova barbearia com usuário administrador. */
     @Transactional
@@ -154,6 +159,8 @@ public class AuthService {
         return buildAuthResponse(usuario, barbearia, cliente.getId(), null);
     }
 
+    /** === Login === */
+
     /** Autentica o usuário e retorna o token JWT. */
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
@@ -235,6 +242,8 @@ public class AuthService {
         return buildAuthResponse(atendente, barbearia, null, null);
     }
 
+    /** === OTP === */
+
     /** Envia código OTP para o telefone do usuário (login sem senha). */
     @Transactional(readOnly = true)
     public Map<String, Object> enviarOtp(OtpEnviarRequest request) {
@@ -308,6 +317,8 @@ public class AuthService {
                 .orElse(null);
     }
 
+    /** === Recuperação de senha === */
+
     /** Inicia o fluxo de recuperação de senha. */
     @Transactional
     public RecuperarSenhaResponse recuperarSenha(RecuperarSenhaRequest request) {
@@ -316,7 +327,11 @@ public class AuthService {
 
         var usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isEmpty()) {
-            return RecuperarSenhaResponse.builder().mensagem(mensagemPadrao).build();
+            return RecuperarSenhaResponse.builder()
+                    .mensagem(mensagemPadrao)
+                    .emailEnviado(false)
+                    .smtpConfigurado(emailService.isConfigurado())
+                    .build();
         }
 
         Usuario usuario = usuarioOpt.get();
@@ -331,19 +346,31 @@ public class AuthService {
         log.info("Token de recuperação de senha gerado para usuário id={}", usuario.getId());
 
         String link = publicBaseUrl.replaceAll("/+$", "") + "/portal/recuperar-senha?token=" + token;
-        emailService.send(
+        boolean enviado = emailService.send(
                 usuario.getBarbearia() != null ? usuario.getBarbearia().getId() : null,
                 email,
-                "Recuperação de senha",
+                "Recuperação de senha — Barba SaaS",
                 "Olá, " + usuario.getNome() + "!\n\n"
-                        + "Recebemos uma solicitação para redefinir sua senha. Clique no link abaixo para continuar:\n"
+                        + "Recebemos uma solicitação para redefinir sua senha.\n\n"
+                        + "Abra o link abaixo (válido por 2 horas):\n"
                         + link + "\n\n"
-                        + "Se você não solicitou essa alteração, ignore este email.");
+                        + "Se você não solicitou essa alteração, ignore este e-mail.");
+
+        String mensagem = enviado
+                ? "Se o e-mail existir, enviamos um link para redefinir a senha. Verifique a caixa de entrada e o spam."
+                : (emailService.isConfigurado()
+                        ? "Não foi possível enviar o e-mail agora. Tente novamente em instantes."
+                        : mensagemPadrao);
 
         RecuperarSenhaResponse.RecuperarSenhaResponseBuilder builder = RecuperarSenhaResponse.builder()
-                .mensagem(mensagemPadrao);
+                .mensagem(mensagem)
+                .emailEnviado(enviado)
+                .smtpConfigurado(emailService.isConfigurado());
         if (securityAppProperties.isExposeDevTokens()) {
             builder.tokenDev(token);
+            if (!enviado) {
+                builder.mensagem(mensagem + " (modo dev: use o token exibido ou o link do log)");
+            }
         }
         return builder.build();
     }
@@ -365,6 +392,8 @@ public class AuthService {
         resetToken.setUsado(true);
         passwordResetTokenRepository.save(resetToken);
     }
+
+    /** === OAuth === */
 
     /** Autentica via provedor OAuth e retorna o token JWT. */
     @Transactional
@@ -433,6 +462,8 @@ public class AuthService {
         return buildAuthResponse(usuario, barbearia, cliente.getId(), null);
     }
 
+    /** === Auxiliares === */
+
     private Long resolveBarbeiroId(Usuario usuario) {
         if (usuario.getRole() != Role.BARBEIRO) {
             return null;
@@ -477,7 +508,9 @@ public class AuthService {
         return digits;
     }
 
-    /** Lista barbearias ativas. */
+    /** === Consultas === */
+
+    /** Lista barbearias ativas para seleção no portal. */
     @Transactional(readOnly = true)
     public java.util.List<BarbeariaResumoResponse> listarBarbeariasAtivas() {
         return barbeariaRepository.findAll().stream()
