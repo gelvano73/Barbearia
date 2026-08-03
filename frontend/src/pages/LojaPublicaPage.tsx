@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import AceitePrivacidade from '../components/AceitePrivacidade'
+import CepLookupField, { montarLinhaEndereco } from '../components/CepLookupField'
 import { marketplacePublicApi } from '../services/resources'
 
 function money(v) {
@@ -15,7 +16,13 @@ export default function LojaPublicaPage() {
   const { barbeariaId } = useParams()
   const [produtos, setProdutos] = useState([])
   const [cart, setCart] = useState({})
-  const [form, setForm] = useState({ clienteNome: '', clienteTelefone: '', clienteEmail: '', enderecoEntrega: '' })
+  const [form, setForm] = useState({
+    clienteNome: '',
+    clienteTelefone: '',
+    clienteEmail: '',
+    cep: '',
+    enderecoEntrega: '',
+  })
   const [aceitePrivacidade, setAceitePrivacidade] = useState(false)
   const [ok, setOk] = useState('')
   const [error, setError] = useState('')
@@ -109,9 +116,31 @@ export default function LojaPublicaPage() {
             Telefone
             <input required value={form.clienteTelefone} onChange={(e) => setForm({ ...form, clienteTelefone: e.target.value })} />
           </label>
+          <div className="full">
+            <CepLookupField
+              value={form.cep}
+              onChange={(cep) => {
+                setError('')
+                setForm((prev) => ({ ...prev, cep }))
+              }}
+              onFound={(end) => {
+                setForm((prev) => ({
+                  ...prev,
+                  cep: end.cep,
+                  enderecoEntrega: montarLinhaEndereco(end),
+                }))
+              }}
+              onError={setError}
+              onInfo={setOk}
+            />
+          </div>
           <label className="full">
-            Endereço
-            <input value={form.enderecoEntrega} onChange={(e) => setForm({ ...form, enderecoEntrega: e.target.value })} />
+            Endereço de entrega
+            <input
+              value={form.enderecoEntrega}
+              onChange={(e) => setForm({ ...form, enderecoEntrega: e.target.value })}
+              placeholder="Logradouro, nº, bairro — cidade/UF"
+            />
           </label>
           <div className="full">
             <AceitePrivacidade

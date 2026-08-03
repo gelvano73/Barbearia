@@ -2,51 +2,55 @@
  * CRUD de unidades/filiais da barbearia.
  */
 import { useEffect, useState } from 'react'
+import CepLookupField, { montarLinhaEndereco } from '../components/CepLookupField'
 import Modal from '../components/Modal'
 import { unidadesApi } from '../services/resources'
 
-const empty = { nome: '', endereco: '', telefone: '', padrao: false }
+/** === Estado inicial === */
+const empty = { nome: '', cep: '', endereco: '', telefone: '', padrao: false }
 
 export default function UnidadesPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(empty)
   const [error, setError] = useState('')
+  const [okCep, setOkCep] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const { data } = await unidadesApi.listar(true)
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar unidades'))
   }, [])
 
-  // Abre o modal para novo cadastro
+  /** === Ações CRUD === */
   const abrirNovo = () => {
     setEditing(null)
     setForm(empty)
     setError('')
+    setOkCep('')
     setOpen(true)
   }
 
-  // Abre o modal preenchido para edição
   const abrirEdicao = (item) => {
     setEditing(item)
     setForm({
       nome: item.nome || '',
+      cep: '',
       endereco: item.endereco || '',
       telefone: item.telefone || '',
       padrao: !!item.padrao,
     })
     setError('')
+    setOkCep('')
     setOpen(true)
   }
 
-  // Monta o payload tipado para a API
   const payload = () => ({
     nome: form.nome.trim(),
     endereco: form.endereco.trim() || null,
@@ -54,7 +58,6 @@ export default function UnidadesPage() {
     padrao: !!form.padrao,
   })
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -68,7 +71,6 @@ export default function UnidadesPage() {
     }
   }
 
-  // Desativa o registro selecionado
   const desativar = async (id) => {
     if (!confirm('Desativar esta unidade?')) return
     try {
@@ -81,6 +83,7 @@ export default function UnidadesPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Unidades</h1>
@@ -93,6 +96,7 @@ export default function UnidadesPage() {
 
       {error && !open && <div className="error">{error}</div>}
 
+      {/* === Tabela de unidades === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhuma unidade cadastrada.</div>
@@ -133,6 +137,7 @@ export default function UnidadesPage() {
         )}
       </div>
 
+      {/* === Modal === */}
       <Modal open={open} title={editing ? 'Editar unidade' : 'Nova unidade'} onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">
@@ -154,11 +159,35 @@ export default function UnidadesPage() {
                 <option value="sim">Sim</option>
               </select>
             </label>
+            <div className="full">
+              <CepLookupField
+                value={form.cep}
+                onChange={(cep) => {
+                  setError('')
+                  setOkCep('')
+                  setForm((prev) => ({ ...prev, cep }))
+                }}
+                onFound={(end) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    cep: end.cep,
+                    endereco: montarLinhaEndereco(end),
+                  }))
+                }}
+                onError={setError}
+                onInfo={setOkCep}
+              />
+            </div>
             <label className="full">
               Endereço
-              <input value={form.endereco} onChange={(e) => setForm({ ...form, endereco: e.target.value })} />
+              <input
+                value={form.endereco}
+                onChange={(e) => setForm({ ...form, endereco: e.target.value })}
+                placeholder="Logradouro, nº, bairro — cidade/UF"
+              />
             </label>
           </div>
+          {okCep && <div className="success" style={{ marginTop: '0.75rem' }}>{okCep}</div>}
           {error && <div className="error">{error}</div>}
           <button className="btn" type="submit" style={{ marginTop: '1rem' }}>
             Salvar

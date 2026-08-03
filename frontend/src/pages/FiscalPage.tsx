@@ -3,9 +3,9 @@
  * Exige CNPJ/IM válidos e CPF real do tomador (Receita Federal).
  */
 import { useEffect, useState } from 'react'
+import CepLookupField from '../components/CepLookupField'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { fiscalApi } from '../services/resources'
-import { buscarEnderecoPorCep, formatarCep, soDigitosCep } from '../utils/cep'
 
 /** === Helpers === */
 function money(v) {
@@ -40,10 +40,8 @@ export default function FiscalPage() {
   const [notas, setNotas] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [buscandoCep, setBuscandoCep] = useState(false)
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
-  const cepPronto = soDigitosCep(config.enderecoCep).length === 8
 
   /** === Carga e persistência === */
   const carregar = async () => {
@@ -109,42 +107,6 @@ export default function FiscalPage() {
       await carregar()
     } catch (err) {
       setError(err.response?.data?.mensagem || 'Falha ao consultar nota')
-    }
-  }
-
-  /** === CEP / endereço === */
-  const onCepChange = (valor) => {
-    setConfig((prev) => ({ ...prev, enderecoCep: formatarCep(valor) }))
-    setError('')
-  }
-
-  const pesquisarEndereco = async () => {
-    setError('')
-    setOk('')
-    if (!cepPronto) {
-      setError('Digite o CEP completo (8 dígitos) para pesquisar o endereço.')
-      return
-    }
-    setBuscandoCep(true)
-    try {
-      const end = await buscarEnderecoPorCep(config.enderecoCep)
-      setConfig((prev) => ({
-        ...prev,
-        enderecoCep: end.cep,
-        enderecoLogradouro: end.logradouro || prev.enderecoLogradouro,
-        enderecoBairro: end.bairro || prev.enderecoBairro,
-        enderecoUf: end.uf || prev.enderecoUf,
-        codigoMunicipioIbge: end.codigoMunicipioIbge || prev.codigoMunicipioIbge,
-      }))
-      setOk(
-        end.localidade
-          ? `Endereço encontrado: ${end.localidade}/${end.uf}. Confira e complete o número.`
-          : 'Endereço encontrado. Confira os campos e complete o número.',
-      )
-    } catch (err) {
-      setError(err.message || 'Falha ao pesquisar CEP')
-    } finally {
-      setBuscandoCep(false)
     }
   }
 
@@ -217,38 +179,28 @@ export default function FiscalPage() {
         </label>
 
         <h2 style={{ margin: '0.5rem 0 0', fontSize: '1.1rem' }}>Endereço</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.75rem', alignItems: 'end' }}>
-          <label>
-            CEP
-            <input
-              value={config.enderecoCep}
-              onChange={(e) => onCepChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  pesquisarEndereco()
-                }
-              }}
-              placeholder="00000-000"
-              inputMode="numeric"
-              maxLength={9}
-            />
-          </label>
-          <button
-            className="btn secondary"
-            type="button"
-            onClick={pesquisarEndereco}
-            disabled={!cepPronto || buscandoCep}
-            style={{ whiteSpace: 'nowrap', height: '2.65rem' }}
-          >
-            {buscandoCep ? 'Pesquisando…' : 'Pesquisar endereço'}
-          </button>
-        </div>
-        {cepPronto && !buscandoCep && (
-          <p className="subtitle" style={{ margin: 0 }}>
-            CEP preenchido — clique em <strong>Pesquisar endereço</strong> para completar logradouro, bairro, UF e IBGE.
-          </p>
-        )}
+        <CepLookupField
+          value={config.enderecoCep}
+          onChange={(cep) => {
+            setError('')
+            setConfig((prev) => ({ ...prev, enderecoCep: cep }))
+          }}
+          onFound={(end) => {
+            setConfig((prev) => ({
+              ...prev,
+              enderecoCep: end.cep,
+              enderecoLogradouro: end.logradouro || prev.enderecoLogradouro,
+              enderecoBairro: end.bairro || prev.enderecoBairro,
+              enderecoUf: end.uf || prev.enderecoUf,
+              codigoMunicipioIbge: end.codigoMunicipioIbge || prev.codigoMunicipioIbge,
+            }))
+          }}
+          onError={setError}
+          onInfo={(msg) => {
+            setError('')
+            setOk(msg)
+          }}
+        />
 
         <label>
           Logradouro
