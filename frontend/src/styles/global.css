@@ -28,6 +28,14 @@
 html, body, #root {
   height: 100%;
   max-height: 100%;
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 body {
@@ -57,11 +65,14 @@ button {
 
 /* === Layout === */
 .app-shell {
-  height: 100dvh;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
   max-height: 100dvh;
   display: grid;
-  grid-template-columns: 210px 1fr;
-  grid-template-rows: 1fr;
+  grid-template-columns: 210px minmax(0, 1fr);
+  /* minmax(0,1fr) é essencial: sem isso o grid não deixa .main encolher e o scroll nunca aparece */
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
 }
 
@@ -82,6 +93,8 @@ button {
 /* === Sidebar === */
 .sidebar {
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
   padding: 1rem 0.85rem;
   border-right: 1px solid var(--line);
   background: rgba(18, 16, 14, 0.72);
@@ -145,15 +158,16 @@ button {
 
 /* === Conteúdo principal === */
 .main {
+  min-width: 0;
   min-height: 0;
   height: 100%;
+  max-height: 100%;
   padding: 1.1rem 1.35rem;
-  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
   overflow-x: hidden;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
+  overscroll-behavior: contain;
+  display: block;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -161,30 +175,30 @@ button {
   min-width: 0;
 }
 
-/* Páginas longas (ex.: Fiscal) não podem encolher e sumir atrás do viewport */
+/* Páginas longas (ex.: Fiscal) — altura natural; o scroll fica em .main */
 .main > .page {
-  flex: 0 0 auto;
+  display: block;
   width: 100%;
-  padding-bottom: 1.25rem;
+  max-width: 100%;
+  padding-bottom: 2.5rem;
 }
 
 .main > .page-header {
-  flex-shrink: 0;
-  margin-bottom: 0;
+  margin-bottom: 0.85rem;
 }
 
-/* Filtros/avisos compactos; a lista principal preenche a tela */
+/* Listagens com painel: mantém scroll interno quando o conteúdo é tabela */
 .main > .panel {
-  flex: 0 0 auto;
+  margin-bottom: 0.85rem;
 }
 
 .main > .panel:has(.table),
 .main > .panel:has(.empty),
 .main > .panel:has(.ia-chat),
 .main > .panel:last-child {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
+  /* sem flex encolhendo: o .main já rola a página inteira */
+  max-height: none;
+  overflow: visible;
 }
 
 .main > .modal-backdrop {
@@ -932,8 +946,7 @@ label.btn.is-disabled {
 }
 
 .main > .dashboard-hero {
-  flex: 1 1 auto;
-  min-height: 0;
+  min-height: min(70vh, 520px);
   overflow: hidden;
 }
 
@@ -1140,15 +1153,22 @@ label.btn.is-disabled {
   .main {
     flex: 1 1 auto;
     width: 100%;
+    min-width: 0;
     min-height: 0;
     height: auto;
-    overflow: auto;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 0.85rem;
-    padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
     padding-left: max(0.85rem, env(safe-area-inset-left));
     padding-right: max(0.85rem, env(safe-area-inset-right));
-    gap: 0.7rem;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .main > .page {
+    padding-bottom: 2.5rem;
   }
 
   .main > .panel,
@@ -1156,7 +1176,6 @@ label.btn.is-disabled {
   .main > .panel:has(.empty),
   .main > .panel:has(.ia-chat),
   .main > .panel:last-child {
-    flex: none;
     max-height: none;
     overflow: visible;
   }

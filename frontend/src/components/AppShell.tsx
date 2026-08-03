@@ -5,8 +5,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 
+/** === Constantes === */
 const MOBILE_MQ = '(max-width: 1024px)'
 
+/** === Tipos === */
 type AppShellProps = {
   brandTitle: string
   brandSubtitle: string
@@ -16,13 +18,14 @@ type AppShellProps = {
 }
 
 export default function AppShell({ brandTitle, brandSubtitle, nav, footer, children }: AppShellProps) {
+  /** === Estado === */
   const [menuOpen, setMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia(MOBILE_MQ).matches : false,
   )
   const location = useLocation()
 
-  // Acompanha breakpoint (desktop ↔ mobile)
+  /** === Efeitos de menu === */
   useEffect(() => {
     const mq = window.matchMedia(MOBILE_MQ)
     const onChange = () => {
@@ -34,12 +37,10 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  // Fecha o drawer ao navegar (mobile)
   useEffect(() => {
     setMenuOpen(false)
   }, [location.pathname])
 
-  // Esc fecha o menu
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (e: KeyboardEvent) => {
@@ -49,7 +50,6 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
     return () => window.removeEventListener('keydown', onKey)
   }, [menuOpen])
 
-  // Trava o scroll do body quando o menu está aberto em telas pequenas
   useEffect(() => {
     if (menuOpen && isMobile) {
       document.body.classList.add('nav-open')
@@ -63,6 +63,7 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
 
   return (
     <div className={`app-shell ${menuOpen ? 'menu-open' : ''} ${isMobile ? 'is-mobile' : ''}`}>
+      {/* === Topbar mobile === */}
       <header className="mobile-topbar">
         <button
           type="button"
@@ -82,6 +83,7 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
         </div>
       </header>
 
+      {/* === Backdrop === */}
       <div
         className="sidebar-backdrop"
         role="presentation"
@@ -89,6 +91,7 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
         aria-hidden={!menuOpen}
       />
 
+      {/* === Sidebar === */}
       <aside
         id="app-sidebar"
         className="sidebar"
@@ -111,7 +114,10 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
         <div className="sidebar-footer">{footer}</div>
       </aside>
 
-      <main className="main">{children}</main>
+      {/* === Conteúdo === */}
+      <main className="main" id="app-main">
+        {children}
+      </main>
     </div>
   )
 }
