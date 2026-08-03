@@ -2,7 +2,7 @@
  * Recuperação de senha (admin, cliente e demais papéis).
  * Solicita link por e-mail e conclui a troca com o token.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { authApi } from '../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
@@ -12,9 +12,21 @@ type Props = {
   loginPath?: string
 }
 
+const LOGIN_POR_VOLTAR: Record<string, { path: string; brand: string }> = {
+  '/auth': { path: '/auth', brand: 'SAAS' },
+  '/portal/login': { path: '/portal/login', brand: 'PORTAL' },
+  '/barbeiro/login': { path: '/barbeiro/login', brand: 'BARBEIRO' },
+  '/recepcao/login': { path: '/recepcao/login', brand: 'RECEPÇÃO' },
+}
+
 export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth' }: Props) {
   /** === Estado === */
   const [searchParams] = useSearchParams()
+  const origem = useMemo(() => {
+    const voltar = searchParams.get('voltar') || ''
+    return LOGIN_POR_VOLTAR[voltar] || { path: loginPath, brand }
+  }, [searchParams, loginPath, brand])
+
   const [email, setEmail] = useState('')
   const [token, setToken] = useState('')
   const [novaSenha, setNovaSenha] = useState('')
@@ -75,7 +87,7 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
         {/* === Cabeçalho === */}
         <div className="brand">
           BARBA
-          <span>{brand}</span>
+          <span>{origem.brand}</span>
         </div>
         <h1>Recuperar senha</h1>
         <p className="subtitle">Enviaremos um link para o e-mail cadastrado.</p>
@@ -126,12 +138,12 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
         {step === 3 && (
           <div>
             <p>{message}</p>
-            <Link className="btn" to={loginPath}>Ir para login</Link>
+            <Link className="btn" to={origem.path}>Ir para login</Link>
           </div>
         )}
 
         <div className="auth-toggle">
-          <Link to={loginPath}>Voltar</Link>
+          <Link to={origem.path}>Voltar</Link>
         </div>
       </div>
     </div>

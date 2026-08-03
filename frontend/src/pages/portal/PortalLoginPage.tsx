@@ -6,6 +6,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 export default function PortalLoginPage() {
+  /** === Estado === */
   const { isAuthenticated, isCliente, loginCliente, loginOAuth, enviarOtp, loginOtp } = useAuth()
   const [loginId, setLoginId] = useState('')
   const [senha, setSenha] = useState('')
@@ -17,9 +18,11 @@ export default function PortalLoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  /** === Redirecionamentos === */
   if (isAuthenticated && isCliente) return <Navigate to="/portal" replace />
   if (isAuthenticated && !isCliente) return <Navigate to="/" replace />
 
+  /** === Login e OTP === */
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -43,6 +46,7 @@ export default function PortalLoginPage() {
     }
   }
 
+  /** === OAuth === */
   const social = async (provider) => {
     setError('')
     setLoading(true)
@@ -64,6 +68,7 @@ export default function PortalLoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        {/* === Cabeçalho === */}
         <div className="brand">
           BARBA
           <span>PORTAL</span>
@@ -71,6 +76,7 @@ export default function PortalLoginPage() {
         <h1>Área do cliente</h1>
         <p className="subtitle">Agende, acompanhe e avalie seus atendimentos.</p>
 
+        {/* === Formulário === */}
         <form onSubmit={onSubmit}>
           <label>
             Email ou CPF
@@ -117,6 +123,7 @@ export default function PortalLoginPage() {
           {otpMode ? 'Entrar com senha' : 'Entrar com código no telefone'}
         </button>
 
+        {/* === Login social === */}
         <div style={{ marginTop: '1rem', display: 'grid', gap: '0.5rem' }}>
           <label>
             Barbearia (OAuth dev)
@@ -130,10 +137,11 @@ export default function PortalLoginPage() {
           </button>
         </div>
 
+        {/* === Links === */}
         <div className="auth-toggle">
           <Link to="/portal/registro">Criar conta</Link>
           {' · '}
-          <Link to="/portal/recuperar-senha">Esqueci a senha</Link>
+          <Link to="/recuperar-senha?voltar=/portal/login">Esqueci minha senha</Link>
           {' · '}
           <Link to="/auth">Sou da barbearia</Link>
           <div style={{ marginTop: '0.65rem' }}>

@@ -1,21 +1,24 @@
 /**
  * Tela de login do portal do barbeiro.
+ * Autentica a conta da equipe e redireciona à área do barbeiro.
  */
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 export default function BarbeiroLoginPage() {
+  /** === Estado === */
   const { isAuthenticated, isBarbeiro, loginBarbeiro } = useAuth()
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  /** === Redirecionamentos === */
   if (isAuthenticated && isBarbeiro) return <Navigate to="/barbeiro" replace />
   if (isAuthenticated && !isBarbeiro) return <Navigate to="/" replace />
 
-  // Submete o formulário
+  /** === Submit === */
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -32,12 +35,14 @@ export default function BarbeiroLoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        {/* === Cabeçalho === */}
         <div className="brand">
           BARBA
           <span>BARBEIRO</span>
         </div>
         <h1>Portal do barbeiro</h1>
         <p className="subtitle">Agenda, comissões, metas e avaliações.</p>
+        {/* === Formulário === */}
         <form onSubmit={onSubmit}>
           <label>
             Email ou CPF
@@ -52,7 +57,11 @@ export default function BarbeiroLoginPage() {
             {loading ? 'Aguarde...' : 'Entrar'}
           </button>
         </form>
+        {/* === Links === */}
         <div className="auth-toggle">
+          <div style={{ marginBottom: '0.65rem' }}>
+            <Link to="/recuperar-senha?voltar=/barbeiro/login">Esqueci minha senha</Link>
+          </div>
           <Link to="/auth">Painel da barbearia</Link>
           {' · '}
           <Link to="/portal/login">Sou cliente</Link>

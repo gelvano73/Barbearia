@@ -1,21 +1,24 @@
 /**
  * Login da área de recepção/atendimento.
+ * Autentica atendente ou admin e redireciona ao portal da recepção.
  */
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 export default function RecepcaoLoginPage() {
+  /** === Estado === */
   const { isAuthenticated, isAtendente, isAdmin, loginRecepcao } = useAuth()
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  /** === Redirecionamentos === */
   if (isAuthenticated && (isAtendente || isAdmin)) return <Navigate to="/recepcao" replace />
   if (isAuthenticated) return <Navigate to="/" replace />
 
-  // Submete o formulário
+  /** === Submit === */
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -32,12 +35,14 @@ export default function RecepcaoLoginPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        {/* === Cabeçalho === */}
         <div className="brand">
           BARBA
           <span>RECEPÇÃO</span>
         </div>
         <h1>Portal da recepção</h1>
         <p className="subtitle">Agenda, fila, clientes, pagamentos e caixa.</p>
+        {/* === Formulário === */}
         <form onSubmit={onSubmit}>
           <label>
             Email ou CPF
@@ -58,7 +63,11 @@ export default function RecepcaoLoginPage() {
             {loading ? 'Aguarde...' : 'Entrar'}
           </button>
         </form>
+        {/* === Links === */}
         <div className="auth-toggle">
+          <div style={{ marginBottom: '0.65rem' }}>
+            <Link to="/recuperar-senha?voltar=/recepcao/login">Esqueci minha senha</Link>
+          </div>
           <Link to="/auth">Painel admin</Link>
           {' · '}
           <Link to="/barbeiro/login">Sou barbeiro</Link>

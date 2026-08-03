@@ -217,7 +217,7 @@ export default function AuthPage() {
                 Abrir conta
               </button>
               <div style={{ marginTop: '0.65rem' }}>
-                <Link to="/recuperar-senha">Esqueci minha senha</Link>
+                <Link to="/recuperar-senha?voltar=/auth">Esqueci minha senha</Link>
               </div>
             </>
           ) : (
