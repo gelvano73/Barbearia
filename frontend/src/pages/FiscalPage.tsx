@@ -5,11 +5,14 @@
 import { useEffect, useState } from 'react'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { fiscalApi } from '../services/resources'
+import { buscarEnderecoPorCep, formatarCep, soDigitosCep } from '../utils/cep'
 
+/** === Helpers === */
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+/** === Estado inicial === */
 const emptyConfig = {
   cnpj: '',
   razaoSocial: '',
@@ -31,14 +34,18 @@ const emptyConfig = {
 }
 
 export default function FiscalPage() {
+  /** === Estado === */
   const [config, setConfig] = useState(emptyConfig)
   const [meta, setMeta] = useState(null)
   const [notas, setNotas] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
+  const cepPronto = soDigitosCep(config.enderecoCep).length === 8
 
+  /** === Carga e persistência === */
   const carregar = async () => {
     const [{ data: cfg }, { data: lista }] = await Promise.all([
       fiscalApi.config(),
@@ -105,10 +112,47 @@ export default function FiscalPage() {
     }
   }
 
+  /** === CEP / endereço === */
+  const onCepChange = (valor) => {
+    setConfig((prev) => ({ ...prev, enderecoCep: formatarCep(valor) }))
+    setError('')
+  }
+
+  const pesquisarEndereco = async () => {
+    setError('')
+    setOk('')
+    if (!cepPronto) {
+      setError('Digite o CEP completo (8 dígitos) para pesquisar o endereço.')
+      return
+    }
+    setBuscandoCep(true)
+    try {
+      const end = await buscarEnderecoPorCep(config.enderecoCep)
+      setConfig((prev) => ({
+        ...prev,
+        enderecoCep: end.cep,
+        enderecoLogradouro: end.logradouro || prev.enderecoLogradouro,
+        enderecoBairro: end.bairro || prev.enderecoBairro,
+        enderecoUf: end.uf || prev.enderecoUf,
+        codigoMunicipioIbge: end.codigoMunicipioIbge || prev.codigoMunicipioIbge,
+      }))
+      setOk(
+        end.localidade
+          ? `Endereço encontrado: ${end.localidade}/${end.uf}. Confira e complete o número.`
+          : 'Endereço encontrado. Confira os campos e complete o número.',
+      )
+    } catch (err) {
+      setError(err.message || 'Falha ao pesquisar CEP')
+    } finally {
+      setBuscandoCep(false)
+    }
+  }
+
   if (loading) return <LoadingState />
 
   return (
     <div className="page">
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Fiscal / NFS-e</h1>
@@ -118,6 +162,7 @@ export default function FiscalPage() {
         </div>
       </div>
 
+      {/* === Status de prontidão === */}
       {meta && (
         <div className={`banner ${meta.prontoParaEmitir ? 'ok' : 'warn'}`} style={{ marginBottom: '1rem' }}>
           <strong>{meta.prontoParaEmitir ? 'Pronto' : 'Pendente'}:</strong> {meta.mensagemProntidao}
@@ -126,6 +171,7 @@ export default function FiscalPage() {
         </div>
       )}
 
+      {/* === Configuração do prestador === */}
       <form className="card-form" onSubmit={salvar} style={{ display: 'grid', gap: '0.75rem', maxWidth: 720 }}>
         <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Prestador (sua barbearia)</h2>
         <label>
@@ -139,10 +185,6 @@ export default function FiscalPage() {
         <label>
           Inscrição municipal
           <input value={config.inscricaoMunicipal} onChange={(e) => setConfig({ ...config, inscricaoMunicipal: e.target.value })} />
-        </label>
-        <label>
-          Código município IBGE (7 dígitos)
-          <input value={config.codigoMunicipioIbge} onChange={(e) => setConfig({ ...config, codigoMunicipioIbge: e.target.value })} maxLength={7} />
         </label>
         <label>
           Código serviço LC 116 (padrão cabeleireiros: 6.02)
@@ -173,28 +215,63 @@ export default function FiscalPage() {
           Token Focus NFe {meta?.possuiToken ? '(deixe em branco para manter)' : ''}
           <input type="password" value={config.nfseToken} onChange={(e) => setConfig({ ...config, nfseToken: e.target.value })} autoComplete="off" />
         </label>
+
+        <h2 style={{ margin: '0.5rem 0 0', fontSize: '1.1rem' }}>Endereço</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.75rem', alignItems: 'end' }}>
+          <label>
+            CEP
+            <input
+              value={config.enderecoCep}
+              onChange={(e) => onCepChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  pesquisarEndereco()
+                }
+              }}
+              placeholder="00000-000"
+              inputMode="numeric"
+              maxLength={9}
+            />
+          </label>
+          <button
+            className="btn secondary"
+            type="button"
+            onClick={pesquisarEndereco}
+            disabled={!cepPronto || buscandoCep}
+            style={{ whiteSpace: 'nowrap', height: '2.65rem' }}
+          >
+            {buscandoCep ? 'Pesquisando…' : 'Pesquisar endereço'}
+          </button>
+        </div>
+        {cepPronto && !buscandoCep && (
+          <p className="subtitle" style={{ margin: 0 }}>
+            CEP preenchido — clique em <strong>Pesquisar endereço</strong> para completar logradouro, bairro, UF e IBGE.
+          </p>
+        )}
+
         <label>
           Logradouro
           <input value={config.enderecoLogradouro} onChange={(e) => setConfig({ ...config, enderecoLogradouro: e.target.value })} />
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.75rem' }}>
           <label>
             Número
             <input value={config.enderecoNumero} onChange={(e) => setConfig({ ...config, enderecoNumero: e.target.value })} />
           </label>
           <label>
-            CEP
-            <input value={config.enderecoCep} onChange={(e) => setConfig({ ...config, enderecoCep: e.target.value })} />
-          </label>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem' }}>
-          <label>
             Bairro
             <input value={config.enderecoBairro} onChange={(e) => setConfig({ ...config, enderecoBairro: e.target.value })} />
           </label>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.75rem' }}>
           <label>
             UF
-            <input value={config.enderecoUf} onChange={(e) => setConfig({ ...config, enderecoUf: e.target.value })} maxLength={2} />
+            <input value={config.enderecoUf} onChange={(e) => setConfig({ ...config, enderecoUf: e.target.value.toUpperCase() })} maxLength={2} />
+          </label>
+          <label>
+            Código município IBGE (preenchido pela busca do CEP)
+            <input value={config.codigoMunicipioIbge} onChange={(e) => setConfig({ ...config, codigoMunicipioIbge: e.target.value })} maxLength={7} />
           </label>
         </div>
         {error && <div className="error">{error}</div>}
@@ -204,6 +281,7 @@ export default function FiscalPage() {
         </button>
       </form>
 
+      {/* === Notas emitidas === */}
       <h2 style={{ marginTop: '2rem' }}>Notas emitidas</h2>
       {notas.length === 0 ? (
         <EmptyState>Nenhuma NFS-e ainda. Após pagamento com CPF do cliente, emita em Pagamentos ou aguarde a emissão automática.</EmptyState>
