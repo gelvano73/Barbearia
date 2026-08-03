@@ -34,6 +34,8 @@ public class CaixaService {
     private final BarbeariaRepository barbeariaRepository;
     private final UsuarioRepository usuarioRepository;
 
+    /** === Consultas === */
+
     /** Retorna o caixa aberto (ou atual) da unidade. */
     @Transactional(readOnly = true)
     public CaixaResponse caixaAtual() {
@@ -53,6 +55,8 @@ public class CaixaService {
                 .map(this::toCaixa)
                 .toList();
     }
+
+    /** === Operações === */
 
     /** Abre o caixa do dia. */
     @Transactional
@@ -116,6 +120,8 @@ public class CaixaService {
                         SecurityUtils.getBarbeariaIdAtual(), StatusCaixa.ABERTO)
                 .orElseThrow(() -> new NegocioException("Não há caixa aberto. Abra o caixa primeiro."));
     }
+
+    /** === Auxiliares === */
 
     private CaixaResponse registrarMovimento(TipoMovimentoCaixa tipo, MovimentoCaixaRequest request, FormaPagamento forma) {
         Caixa caixa = getCaixaAberto();

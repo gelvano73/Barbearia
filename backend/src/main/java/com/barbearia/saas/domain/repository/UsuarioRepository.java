@@ -1,6 +1,7 @@
 package com.barbearia.saas.domain.repository;
 
 import com.barbearia.saas.domain.entity.Usuario;
+import com.barbearia.saas.domain.enums.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +20,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByEmail(String email);
 
     boolean existsByCpf(String cpf);
+
+    long countByBarbeariaIdAndRoleAndAtivoTrue(Long barbeariaId, Role role);
 }

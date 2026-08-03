@@ -32,6 +32,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, Contador> contadores = new ConcurrentHashMap<>();
 
+    /** === Filtro === */
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -56,6 +58,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+    /** === Contadores === */
 
     private boolean isLoginSensivel(String path) {
         return path.contains("/login") || path.contains("/otp/") || path.contains("/registro")

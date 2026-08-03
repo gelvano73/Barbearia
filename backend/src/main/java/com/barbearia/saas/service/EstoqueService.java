@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.domain.entity.*;
 import com.barbearia.saas.domain.enums.TipoEstoqueMovimento;
 import com.barbearia.saas.domain.repository.BarbeariaRepository;
@@ -25,10 +27,14 @@ public class EstoqueService {
     private static final List<String> PRODUTOS_PADRAO = List.of(
             "Gel", "Pomada", "Shampoo", "Navalhas", "Lâminas");
 
+    private final PlanoAcessoService planoAcessoService;
+
     private final ProdutoRepository produtoRepository;
     private final EstoqueMovimentoRepository movimentoRepository;
     private final BarbeariaRepository barbeariaRepository;
     private final UsuarioRepository usuarioRepository;
+
+    /** === Produtos === */
 
     /** Lista produtos. */
     @Transactional(readOnly = true)
@@ -53,6 +59,7 @@ public class EstoqueService {
     /** Cria produto. */
     @Transactional
     public ProdutoResponse criarProduto(ProdutoRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.ESTOQUE);
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
         String nome = request.getNome().trim();
         if (produtoRepository.existsByBarbeariaIdAndNomeIgnoreCaseAndAtivoTrue(barbeariaId, nome)) {
@@ -78,6 +85,7 @@ public class EstoqueService {
     /** Atualiza produto. */
     @Transactional
     public ProdutoResponse atualizarProduto(Long id, ProdutoRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.ESTOQUE);
         Produto produto = encontrarProduto(id);
         String nome = request.getNome().trim();
         if (produtoRepository.existsByBarbeariaIdAndNomeIgnoreCaseAndAtivoTrueAndIdNot(
@@ -96,10 +104,13 @@ public class EstoqueService {
     /** Desativa produto. */
     @Transactional
     public void desativarProduto(Long id) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.ESTOQUE);
         Produto produto = encontrarProduto(id);
         produto.setAtivo(false);
         produtoRepository.save(produto);
     }
+
+    /** === Movimentos === */
 
     /** Lista movimentos. */
     @Transactional(readOnly = true)
@@ -117,6 +128,7 @@ public class EstoqueService {
     /** Registra um movimento no caixa. */
     @Transactional
     public EstoqueMovimentoResponse movimentar(EstoqueMovimentoRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.ESTOQUE);
         Produto produto = encontrarProduto(request.getProdutoId());
         BigDecimal antes = produto.getQuantidade() != null ? produto.getQuantidade() : BigDecimal.ZERO;
         BigDecimal qtd = request.getQuantidade();
@@ -171,6 +183,8 @@ public class EstoqueService {
 
         return toMovimentoResponse(mov);
     }
+
+    /** === Auxiliares === */
 
     private void seedProdutosPadrao(Long barbeariaId) {
         Barbearia barbearia = barbeariaRepository.findById(barbeariaId)

@@ -1,10 +1,14 @@
 package com.barbearia.saas.service.nfse;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
-/** Contrato de provedor de NFS-e (Focus NFe, etc.). */
+/**
+ * Contrato de provedor de NFS-e (ex.: Focus NFe): emissão e consulta por referência,
+ * com DTOs imutáveis de prestador, tomador, serviço e resultado.
+ */
 public interface NfseProvider {
+
+    /** === Modelos === */
 
     record Prestador(
             String cnpj,
@@ -52,6 +56,8 @@ public interface NfseProvider {
             String rawJson
     ) {
     }
+
+    /** === Operações === */
 
     EmissaoResultado emitir(String token, EmissaoRequest request);
 

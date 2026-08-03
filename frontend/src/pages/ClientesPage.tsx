@@ -10,9 +10,11 @@ import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { clientesApi } from '../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
+/** === Estado inicial === */
 const empty = { nome: '', telefone: '', email: '', cpf: '', observacoes: '' }
 
 export default function ClientesPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -21,20 +23,19 @@ export default function ClientesPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const { data } = await clientesApi.listar(true)
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar()
       .catch(() => setError('Não foi possível carregar clientes'))
       .finally(() => setLoading(false))
   }, [])
 
-  // Abre o modal para novo cadastro
+  /** === Ações CRUD === */
   const abrirNovo = () => {
     setEditing(null)
     setForm(empty)
@@ -43,7 +44,6 @@ export default function ClientesPage() {
     setOpen(true)
   }
 
-  // Abre o modal preenchido para edição
   const abrirEdicao = (item) => {
     setEditing(item)
     setForm({
@@ -58,7 +58,6 @@ export default function ClientesPage() {
     setOpen(true)
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -79,7 +78,6 @@ export default function ClientesPage() {
     }
   }
 
-  // Envia a foto do cadastro
   const enviarFoto = async (file) => {
     if (!editing?.id) return
     setError('')
@@ -93,7 +91,6 @@ export default function ClientesPage() {
     }
   }
 
-  // Desativa o registro selecionado
   const desativar = async (id) => {
     if (!confirm('Desativar este cliente?')) return
     await clientesApi.desativar(id)
@@ -102,6 +99,7 @@ export default function ClientesPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Clientes</h1>
@@ -112,6 +110,7 @@ export default function ClientesPage() {
         </button>
       </div>
 
+      {/* === Tabela de clientes === */}
       <div className="panel">
         {loading ? (
           <LoadingState label="Carregando clientes…" />
@@ -158,6 +157,7 @@ export default function ClientesPage() {
         )}
       </div>
 
+      {/* === Modal de cadastro === */}
       <Modal open={open} title={editing ? 'Editar cliente' : 'Novo cliente'} onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">

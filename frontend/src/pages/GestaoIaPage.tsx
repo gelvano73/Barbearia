@@ -5,15 +5,17 @@
 import { useEffect, useState } from 'react'
 import { gestaoApi } from '../services/resources'
 
+/** === Helpers === */
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
 export default function GestaoIaPage() {
+  /** === Estado === */
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
-  // Effect: carga inicial dos dados
+  /** === Carga de dados === */
   useEffect(() => {
     gestaoApi
       .previsoes()
@@ -23,6 +25,7 @@ export default function GestaoIaPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>IA de Gestão</h1>
@@ -32,6 +35,7 @@ export default function GestaoIaPage() {
       {error && <div className="error">{error}</div>}
       {data && (
         <>
+          {/* === Insights === */}
           <div className="panel" style={{ marginBottom: '1rem' }}>
             <p style={{ margin: 0 }}>{data.insight}</p>
             <div className="actions-row" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '1.5rem' }}>
@@ -49,6 +53,7 @@ export default function GestaoIaPage() {
               </div>
             </div>
           </div>
+          {/* === Faturamento previsto === */}
           <div className="panel" style={{ marginBottom: '1rem' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Faturamento previsto</h2>
             <table className="table">
@@ -68,6 +73,7 @@ export default function GestaoIaPage() {
               </tbody>
             </table>
           </div>
+          {/* === Previsão de estoque === */}
           <div className="panel">
             <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Previsão de estoque</h2>
             <table className="table">

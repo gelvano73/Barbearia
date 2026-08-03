@@ -10,7 +10,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Gera e valida tokens OTP enviados ao telefone cadastrado (WhatsApp/e-mail). */
+/**
+ * Gera e valida códigos OTP de acesso enviados ao telefone cadastrado
+ * (WhatsApp/e-mail via {@link NotificacaoService}).
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -21,6 +24,8 @@ public class OtpService {
 
     private final NotificacaoService notificacaoService;
     private final Map<String, Codigo> codigos = new ConcurrentHashMap<>();
+
+    /** === Geração e validação === */
 
     public String gerarEEnviar(String chaveLogin, String telefone, Long barbeariaId, String nome) {
         if (telefone == null || telefone.isBlank()) {
@@ -52,6 +57,8 @@ public class OtpService {
         }
         codigos.remove(normalizar(chaveLogin));
     }
+
+    /** === Auxiliares === */
 
     private String normalizar(String chave) {
         return chave == null ? "" : chave.trim().toLowerCase();

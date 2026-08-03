@@ -5,24 +5,24 @@
 import { useEffect, useState } from 'react'
 import { marketplaceApi } from '../services/resources'
 
+/** === Helpers === */
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
 export default function MarketplacePage() {
+  /** === Estado === */
   const [pedidos, setPedidos] = useState([])
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga e ações === */
   const carregar = () =>
     marketplaceApi.pedidos().then((r) => setPedidos(r.data)).catch(() => setError('Erro ao carregar pedidos'))
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar()
   }, [])
 
-  // Atualiza o status do pedido
   const status = async (id, s) => {
     await marketplaceApi.atualizarStatus(id, s)
     await carregar()
@@ -30,6 +30,7 @@ export default function MarketplacePage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Marketplace</h1>
@@ -37,6 +38,7 @@ export default function MarketplacePage() {
         </div>
       </div>
       {error && <div className="error">{error}</div>}
+      {/* === Pedidos === */}
       <div className="panel">
         {pedidos.length === 0 ? (
           <div className="empty">Nenhum pedido. Ative produtos no estoque (preço + marketplace) e venda em /loja/1</div>

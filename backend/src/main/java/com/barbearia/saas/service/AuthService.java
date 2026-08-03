@@ -52,6 +52,7 @@ public class AuthService {
     private final OtpService otpService;
     private final EmailDominioService emailDominioService;
     private final SecurityAppProperties securityAppProperties;
+    private final PlanoAcessoService planoAcessoService;
 
     @Value("${app.oauth.dev-mode:true}")
     private boolean oauthDevMode;
@@ -132,6 +133,7 @@ public class AuthService {
         Barbearia barbearia = barbeariaRepository.findById(request.getBarbeariaId())
                 .filter(b -> Boolean.TRUE.equals(b.getAtivo()))
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Barbearia não encontrada"));
+        planoAcessoService.exigirPodeCriarCliente(barbearia.getId());
 
         Usuario usuario = usuarioRepository.save(Usuario.builder()
                 .barbearia(barbearia)
@@ -217,6 +219,7 @@ public class AuthService {
         if (role != Role.ADMIN) {
             throw new NegocioException("Apenas admin pode criar recepcionista");
         }
+        planoAcessoService.exigirPodeCriarAtendente();
 
         emailDominioService.validarOuFalhar(request.getEmail());
         String email = EmailUtil.normalizar(request.getEmail());
@@ -427,6 +430,7 @@ public class AuthService {
         Cliente cliente;
 
         if (usuario == null) {
+            planoAcessoService.exigirPodeCriarCliente(barbearia.getId());
             usuario = usuarioRepository.save(Usuario.builder()
                     .barbearia(barbearia)
                     .nome(request.getNome().trim())
@@ -487,6 +491,7 @@ public class AuthService {
                 .role(usuario.getRole())
                 .barbeariaId(barbearia.getId())
                 .nomeBarbearia(barbearia.getNome())
+                .plano(barbearia.getPlano() != null ? barbearia.getPlano() : PlanoAssinatura.TRIAL)
                 .build();
     }
 

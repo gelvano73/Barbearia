@@ -8,6 +8,7 @@ import Modal from '../components/Modal'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { agendamentosApi, barbeirosApi, clientesApi, servicosApi } from '../services/resources'
 
+/** === Estado inicial === */
 const empty = {
   clienteId: '',
   barbeiroId: '',
@@ -17,6 +18,7 @@ const empty = {
   observacoes: '',
 }
 
+/** === Helpers === */
 function statusClass(status) {
   if (['CONCLUIDO', 'CONFIRMADO'].includes(status)) return 'ok'
   if (['CANCELADO', 'NAO_COMPARECEU'].includes(status)) return 'danger'
@@ -40,6 +42,7 @@ function hojeISO() {
 }
 
 export default function AgendamentosPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [clientes, setClientes] = useState([])
   const [barbeiros, setBarbeiros] = useState([])
@@ -52,7 +55,7 @@ export default function AgendamentosPage() {
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const params = {}
     if (filtroData) params.data = filtroData
@@ -68,7 +71,6 @@ export default function AgendamentosPage() {
     setServicos(svs)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     setLoading(true)
     carregar()
@@ -91,7 +93,7 @@ export default function AgendamentosPage() {
     [slots, form.dataHora],
   )
 
-  // Carrega slots disponíveis
+  /** === Horários livres === */
   const carregarSlots = async (next = form) => {
     if (!next.barbeiroId || !next.servicoId || !next.data) {
       setSlots([])
@@ -118,7 +120,6 @@ export default function AgendamentosPage() {
     }
   }
 
-  // Atualiza o formulário e recarrega slots se necessário
   const atualizarForm = (patch) => {
     const next = { ...form, ...patch }
     if ('barbeiroId' in patch || 'servicoId' in patch || 'data' in patch) {
@@ -128,7 +129,7 @@ export default function AgendamentosPage() {
     carregarSlots(next)
   }
 
-  // Abre o modal para novo cadastro
+  /** === Ações === */
   const abrirNovo = () => {
     const initial = { ...empty, data: hojeISO() }
     setForm(initial)
@@ -137,7 +138,6 @@ export default function AgendamentosPage() {
     setOpen(true)
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -160,13 +160,11 @@ export default function AgendamentosPage() {
     }
   }
 
-  // Atualiza o status do agendamento
   const atualizarStatus = async (id, status) => {
     await agendamentosApi.atualizarStatus(id, status)
     await carregar()
   }
 
-  // Cancela o item selecionado
   const cancelar = async (id) => {
     if (!confirm('Cancelar este agendamento?')) return
     await agendamentosApi.cancelar(id)
@@ -175,6 +173,7 @@ export default function AgendamentosPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Agendamentos</h1>
@@ -185,6 +184,7 @@ export default function AgendamentosPage() {
         </button>
       </div>
 
+      {/* === Filtros === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <label style={{ maxWidth: 260 }}>
           Filtrar por data
@@ -195,6 +195,7 @@ export default function AgendamentosPage() {
         )}
       </div>
 
+      {/* === Tabela === */}
       <div className="panel">
         {loading ? (
           <LoadingState label="Carregando agendamentos…" />
@@ -250,6 +251,7 @@ export default function AgendamentosPage() {
         )}
       </div>
 
+      {/* === Modal agendamento === */}
       <Modal open={open} title="Agenda inteligente" onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">

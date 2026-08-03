@@ -11,10 +11,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/** Headers de segurança HTTP (XSS, clickjacking, MIME sniffing). */
+/**
+ * Filtro que aplica headers de segurança HTTP em todas as respostas
+ * (XSS, clickjacking, MIME sniffing, CSP e HSTS em HTTPS).
+ */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
 public class SecurityHeadersFilter extends OncePerRequestFilter {
+
+    /** === Filtro === */
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

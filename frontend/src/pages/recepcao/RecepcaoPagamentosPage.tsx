@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../../components/Modal'
 import { recepcaoApi } from '../../services/resources'
 
+/** === Constantes === */
 const FORMAS = [
   { value: 'PIX', label: 'PIX' },
   { value: 'CREDITO', label: 'Crédito' },
@@ -12,6 +13,7 @@ const FORMAS = [
   { value: 'DINHEIRO', label: 'Dinheiro' },
 ]
 
+/** === Estado inicial === */
 const empty = {
   valor: '',
   formaPagamento: 'PIX',
@@ -22,6 +24,7 @@ const empty = {
   descricao: '',
 }
 
+/** === Helpers === */
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
@@ -36,6 +39,7 @@ function formatDateTime(value) {
 }
 
 export default function RecepcaoPagamentosPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [clientes, setClientes] = useState([])
   const [servicos, setServicos] = useState([])
@@ -46,7 +50,7 @@ export default function RecepcaoPagamentosPage() {
   const [data, setData] = useState(() => new Date().toISOString().slice(0, 10))
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const [{ data: pags }, { data: cls }, { data: svs }, { data: ags }, { data: cx }] = await Promise.all([
       recepcaoApi.pagamentos({ data }),
@@ -62,12 +66,11 @@ export default function RecepcaoPagamentosPage() {
     setCaixa(cx)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar pagamentos'))
   }, [data])
 
-  // Abre o modal para novo cadastro
+  /** === Ações === */
   const abrirNovo = () => {
     setForm({ ...empty, dataPagamento: data })
     setError('')
@@ -81,7 +84,6 @@ export default function RecepcaoPagamentosPage() {
     return s?.nome || ''
   }
 
-  // Seleciona serviço do catálogo e preenche o valor
   const escolherServico = (servicoId) => {
     const s = servicos.find((x) => String(x.id) === String(servicoId))
     setForm((prev) => ({
@@ -113,7 +115,6 @@ export default function RecepcaoPagamentosPage() {
     }))
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -136,6 +137,7 @@ export default function RecepcaoPagamentosPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Pagamentos</h1>
@@ -146,6 +148,7 @@ export default function RecepcaoPagamentosPage() {
         </button>
       </div>
 
+      {/* === Filtro === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <label>
           Data
@@ -159,6 +162,7 @@ export default function RecepcaoPagamentosPage() {
         </div>
       )}
 
+      {/* === Lista === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhum pagamento nesta data.</div>
@@ -192,6 +196,7 @@ export default function RecepcaoPagamentosPage() {
         )}
       </div>
 
+      {/* === Modal === */}
       <Modal open={open} title="Registrar pagamento" onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">

@@ -1,6 +1,7 @@
 package com.barbearia.saas.service;
 
 import com.barbearia.saas.domain.entity.*;
+import com.barbearia.saas.domain.enums.PlanoRecurso;
 import com.barbearia.saas.domain.enums.StatusPedidoMarketplace;
 import com.barbearia.saas.domain.enums.TipoEstoqueMovimento;
 import com.barbearia.saas.domain.repository.*;
@@ -27,10 +28,16 @@ public class MarketplaceService {
     private final BarbeariaRepository barbeariaRepository;
     private final EstoqueMovimentoRepository movimentoRepository;
     private final UnidadeService unidadeService;
+    private final PlanoAcessoService planoAcessoService;
+
+    /** === Catálogo === */
 
     /** Lista o catálogo público de produtos do marketplace. */
     @Transactional(readOnly = true)
     public List<MarketplaceProdutoResponse> catalogoPublico(Long barbeariaId) {
+        if (!planoAcessoService.temRecurso(barbeariaId, PlanoRecurso.MARKETPLACE)) {
+            return List.of();
+        }
         return produtoRepository
                 .findByBarbeariaIdAndMarketplaceAtivoTrueAndAtivoTrueOrderByNomeAsc(barbeariaId)
                 .stream()
@@ -39,9 +46,12 @@ public class MarketplaceService {
                 .toList();
     }
 
+    /** === Pedidos === */
+
     /** Lista pedidos. */
     @Transactional(readOnly = true)
     public List<PedidoMarketplaceResponse> listarPedidos() {
+        planoAcessoService.exigirRecurso(PlanoRecurso.MARKETPLACE);
         return pedidoRepository.findByBarbeariaIdOrderByCriadoEmDesc(SecurityUtils.getBarbeariaIdAtual())
                 .stream()
                 .map(this::toPedido)
@@ -51,6 +61,7 @@ public class MarketplaceService {
     /** Cria um pedido no marketplace. */
     @Transactional
     public PedidoMarketplaceResponse criarPedido(Long barbeariaId, MarketplacePedidoRequest request) {
+        planoAcessoService.exigirRecurso(barbeariaId, PlanoRecurso.MARKETPLACE);
         Barbearia barbearia = barbeariaRepository.findById(barbeariaId)
                 .filter(b -> Boolean.TRUE.equals(b.getAtivo()))
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Barbearia não encontrada"));
@@ -119,12 +130,15 @@ public class MarketplaceService {
     /** Atualiza status. */
     @Transactional
     public PedidoMarketplaceResponse atualizarStatus(Long id, StatusPedidoMarketplace status) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.MARKETPLACE);
         PedidoMarketplace pedido = pedidoRepository
                 .findByIdAndBarbeariaId(id, SecurityUtils.getBarbeariaIdAtual())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido não encontrado"));
         pedido.setStatus(status);
         return toPedido(pedidoRepository.save(pedido));
     }
+
+    /** === Auxiliares === */
 
     private MarketplaceProdutoResponse toProduto(Produto p) {
         return MarketplaceProdutoResponse.builder()

@@ -27,6 +27,8 @@ public class EmailDominioService {
     private final EmailProperties properties;
     private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
+    /** === Validação pública === */
+
     public boolean dominioExiste(String email) {
         if (!properties.isValidarDns()) {
             return true;
@@ -58,6 +60,8 @@ public class EmailDominioService {
                     "Domínio do e-mail não encontrado no DNS. Informe um e-mail real e ativo.");
         }
     }
+
+    /** === DNS === */
 
     private boolean consultarDns(String dominio) {
         Hashtable<String, String> env = new Hashtable<>();

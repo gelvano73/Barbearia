@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.domain.entity.Agendamento;
 import com.barbearia.saas.domain.entity.Barbearia;
 import com.barbearia.saas.domain.entity.Cliente;
@@ -35,10 +37,12 @@ public class PagamentoOnlineService {
     private final BarbeariaRepository barbeariaRepository;
     private final MercadoPagoClient mercadoPagoClient;
     private final PagamentoService pagamentoService;
+    private final PlanoAcessoService planoAcessoService;
 
     /** Cria um pagamento pendente e inicia o checkout no gateway configurado. */
     @Transactional
     public PagamentoResponse criarCheckout(PagamentoRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.PAGAMENTO_ONLINE);
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
         Barbearia barbearia = barbeariaRepository.findById(barbeariaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Barbearia não encontrada"));

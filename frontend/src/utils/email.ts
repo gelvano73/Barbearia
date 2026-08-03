@@ -3,6 +3,7 @@
  * Formato + bloqueio de descartáveis/exemplo. DNS é validado na API.
  */
 
+/** === Formato e domínio === */
 const FORMATO =
   /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,62}[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/
 
@@ -47,10 +48,12 @@ const DOMINIOS_BLOQUEADOS = new Set([
   'burnermail.io',
 ])
 
+/** === Normalização === */
 export function normalizarEmail(email: string) {
   return (email || '').trim().toLowerCase()
 }
 
+/** === Validação === */
 export function emailRealOk(email: string) {
   const e = normalizarEmail(email)
   if (!e || e.length > 150 || e.includes('..') || e.startsWith('.') || e.includes('@.')) {
@@ -78,5 +81,6 @@ export function emailRealOk(email: string) {
   return true
 }
 
+/** === Mensagens === */
 export const MSG_EMAIL_INVALIDO =
   'Informe um e-mail real e ativo (não use temporários, fake nem example.com).'

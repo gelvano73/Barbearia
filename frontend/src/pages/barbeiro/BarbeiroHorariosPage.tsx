@@ -4,8 +4,10 @@
 import { useEffect, useState } from 'react'
 import { barbeiroPortalApi } from '../../services/resources'
 
+/** === Constantes === */
 const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
+/** === Estado inicial === */
 const defaultRows = () => DIAS.map((_, i) => ({
   diaSemana: i,
   horaInicio: '09:00',
@@ -14,11 +16,12 @@ const defaultRows = () => DIAS.map((_, i) => ({
 }))
 
 export default function BarbeiroHorariosPage() {
+  /** === Estado === */
   const [rows, setRows] = useState(defaultRows())
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
-  // Effect: carga inicial dos dados
+  /** === Carga e ações === */
   useEffect(() => {
     barbeiroPortalApi.horarios()
       .then(({ data }) => {
@@ -37,7 +40,6 @@ export default function BarbeiroHorariosPage() {
       .catch(() => setError('Falha ao carregar horários'))
   }, [])
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -58,12 +60,14 @@ export default function BarbeiroHorariosPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Horários</h1>
           <p>Gestão da sua disponibilidade semanal</p>
         </div>
       </div>
+      {/* === Grade semanal === */}
       <div className="panel">
         <form onSubmit={salvar}>
           <table className="table">

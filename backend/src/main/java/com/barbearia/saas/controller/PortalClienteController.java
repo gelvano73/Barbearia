@@ -42,6 +42,8 @@ public class PortalClienteController {
     private final HorarioDisponivelService horarioDisponivelService;
     private final FidelidadeService fidelidadeService;
 
+    /** === Perfil === */
+
     /** Obter perfil do cliente. */
     @GetMapping("/perfil")
     @Operation(summary = "Obter perfil do cliente")
@@ -63,6 +65,8 @@ public class PortalClienteController {
         return ResponseEntity.ok(portalClienteService.uploadFoto(file));
     }
 
+    /** === Agendamentos === */
+
     /** Listar meus agendamentos. */
     @GetMapping("/agendamentos")
     @Operation(summary = "Listar meus agendamentos")
@@ -76,6 +80,8 @@ public class PortalClienteController {
     public ResponseEntity<List<AgendamentoResponse>> historico() {
         return ResponseEntity.ok(portalClienteService.historico());
     }
+
+    /** === Catálogo === */
 
     /** Listar barbeiros disponíveis. */
     @GetMapping("/barbeiros")
@@ -102,6 +108,8 @@ public class PortalClienteController {
         return ResponseEntity.ok(horarioDisponivelService.listar(barbeiroId, servicoId, data, limite));
     }
 
+    /** === Operações === */
+
     /** Agendar online. */
     @PostMapping("/agendamentos")
     @Operation(summary = "Agendar online")
@@ -125,6 +133,8 @@ public class PortalClienteController {
         return ResponseEntity.noContent().build();
     }
 
+    /** === Fidelidade e avaliações === */
+
     /** Meus pontos, resgates e histórico. */
     @GetMapping("/fidelidade")
     @Operation(summary = "Meus pontos, resgates e histórico")
@@ -138,6 +148,8 @@ public class PortalClienteController {
     public ResponseEntity<AvaliacaoResponse> avaliar(@Valid @RequestBody AvaliacaoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(portalClienteService.avaliar(request));
     }
+
+    /** === IA === */
 
     /** IA de atendimento: responde, sugere serviços e agenda. */
     @PostMapping("/ia/chat")

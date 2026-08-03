@@ -45,6 +45,8 @@ public class AgendamentoService {
     private final FidelidadeService fidelidadeService;
     private final NotificacaoService notificacaoService;
 
+    /** === Consultas === */
+
     /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
     public List<AgendamentoResponse> listar(LocalDate data, Long barbeiroId) {
@@ -71,6 +73,8 @@ public class AgendamentoService {
     public AgendamentoResponse buscarPorId(Long id) {
         return toResponse(encontrarNaBarbearia(id));
     }
+
+    /** === Operações === */
 
     /** Cria um novo registro. */
     @Transactional
@@ -182,6 +186,8 @@ public class AgendamentoService {
                         + " foi cancelado.");
     }
 
+    /** === Validação === */
+
     /** Valida conflito. */
     public void validarConflito(Long barbeiroId, LocalDateTime inicio, int duracaoMinutos, Long agendamentoId) {
         LocalDateTime fim = inicio.plusMinutes(duracaoMinutos);
@@ -200,6 +206,8 @@ public class AgendamentoService {
             throw new NegocioException("Horário indisponível para este barbeiro");
         }
     }
+
+    /** === Auxiliares === */
 
     private Agendamento encontrarNaBarbearia(Long id) {
         return agendamentoRepository.findByIdAndBarbeariaId(id, SecurityUtils.getBarbeariaIdAtual())

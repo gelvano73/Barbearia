@@ -6,6 +6,7 @@
 import { useEffect, type ReactNode, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 
+/** === Tipos === */
 type ModalProps = {
   open: boolean
   title: string
@@ -14,7 +15,7 @@ type ModalProps = {
 }
 
 export default function Modal({ open, title, onClose, children }: ModalProps) {
-  // Trava o scroll da página enquanto o modal estiver aberto
+  /** === Efeito de scroll === */
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
@@ -28,6 +29,7 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
 
   return createPortal(
     <div className="modal-backdrop" onClick={onClose} role="presentation">
+      {/* === Diálogo === */}
       <div
         className="modal"
         role="dialog"

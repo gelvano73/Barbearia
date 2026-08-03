@@ -39,6 +39,8 @@ public class PortalBarbeiroService {
     private final FidelidadeService fidelidadeService;
     private final FotoStorageService fotoStorageService;
 
+    /** === Perfil e dashboard === */
+
     /** Retorna o perfil do usuário autenticado. */
     @Transactional(readOnly = true)
     public BarbeiroPerfilResponse perfil() {
@@ -100,6 +102,8 @@ public class PortalBarbeiroService {
                 .build();
     }
 
+    /** === Agenda === */
+
     /** Lista a agenda de atendimentos do barbeiro. */
     @Transactional(readOnly = true)
     public List<AgendamentoResponse> agenda(LocalDate data) {
@@ -136,6 +140,8 @@ public class PortalBarbeiroService {
         }
         return agendamentoService.toResponse(salvo);
     }
+
+    /** === Horários e férias === */
 
     /** Lista horarios. */
     @Transactional(readOnly = true)
@@ -201,6 +207,8 @@ public class PortalBarbeiroService {
         ferias.setStatus(StatusFerias.CANCELADO);
         feriasRepository.save(ferias);
     }
+
+    /** === Comissões e metas === */
 
     /** Lista comissoes. */
     @Transactional(readOnly = true)
@@ -269,6 +277,8 @@ public class PortalBarbeiroService {
                 .percentualComissao(percentual(comissao, metaComissao))
                 .build();
     }
+
+    /** === Auxiliares === */
 
     private Double percentual(long valor, int meta) {
         if (meta <= 0) return 0.0;

@@ -12,6 +12,8 @@ public final class CnpjUtil {
     private CnpjUtil() {
     }
 
+    /** === Normalização === */
+
     public static String somenteDigitos(String valor) {
         if (valor == null) {
             return "";
@@ -19,6 +21,9 @@ public final class CnpjUtil {
         return valor.replaceAll("\\D", "");
     }
 
+    /** === Validação === */
+
+    /** Valida dígitos verificadores (Receita Federal). */
     public static boolean isValido(String valor) {
         String cnpj = somenteDigitos(valor);
         if (cnpj.length() != 14 || cnpj.chars().distinct().count() == 1) {

@@ -4,7 +4,7 @@ import com.barbearia.saas.util.CnpjUtil;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-/** Validador Bean Validation de CNPJ. */
+/** Validador Bean Validation de CNPJ (dígitos verificadores da Receita Federal). */
 public class CnpjValidator implements ConstraintValidator<Cnpj, String> {
 
     private boolean optional;

@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.domain.entity.Agendamento;
 import com.barbearia.saas.domain.entity.Comissao;
 import com.barbearia.saas.domain.entity.Servico;
@@ -27,7 +29,11 @@ public class ComissaoService {
     private static final BigDecimal PERCENTUAL_PADRAO = new BigDecimal("40.00");
     private static final BigDecimal VALOR_PADRAO_SERVICO = new BigDecimal("45.00");
 
+    private final PlanoAcessoService planoAcessoService;
+
     private final ComissaoRepository comissaoRepository;
+
+    /** === Geração === */
 
     /** Gera se necessario. */
     @Transactional
@@ -58,9 +64,12 @@ public class ComissaoService {
                 .build());
     }
 
+    /** === Consultas === */
+
     /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
     public List<ComissaoDetalheResponse> listar(Integer ano, Integer mes, Long barbeiroId) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.COMISSOES);
         YearMonth ym = resolverPeriodo(ano, mes);
         LocalDateTime inicio = ym.atDay(1).atStartOfDay();
         LocalDateTime fim = ym.plusMonths(1).atDay(1).atStartOfDay();
@@ -78,6 +87,7 @@ public class ComissaoService {
     /** Retorna o resumo mensal de comissões. */
     @Transactional(readOnly = true)
     public ComissaoMensalResponse resumoMensal(Integer ano, Integer mes) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.COMISSOES);
         YearMonth ym = resolverPeriodo(ano, mes);
         LocalDateTime inicio = ym.atDay(1).atStartOfDay();
         LocalDateTime fim = ym.plusMonths(1).atDay(1).atStartOfDay();
@@ -120,6 +130,8 @@ public class ComissaoService {
                 .ranking(ranking)
                 .build();
     }
+
+    /** === Auxiliares === */
 
     private YearMonth resolverPeriodo(Integer ano, Integer mes) {
         if (ano != null && mes != null) {

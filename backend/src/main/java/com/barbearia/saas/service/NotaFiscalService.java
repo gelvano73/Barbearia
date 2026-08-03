@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.config.NfseProperties;
 import com.barbearia.saas.domain.entity.*;
 import com.barbearia.saas.domain.enums.StatusNotaFiscal;
@@ -22,17 +24,24 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Emissão e consulta de NFS-e de serviços prestados. */
+/**
+ * Emissão, consulta e sincronização de NFS-e vinculadas a pagamentos confirmados,
+ * via provedor configurado (Focus NFe) e dados fiscais da barbearia.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class NotaFiscalService {
+
+    private final PlanoAcessoService planoAcessoService;
 
     private final NotaFiscalRepository notaFiscalRepository;
     private final PagamentoRepository pagamentoRepository;
     private final ConfigFiscalService configFiscalService;
     private final NfseProvider nfseProvider;
     private final NfseProperties nfseProperties;
+
+    /** === Consultas === */
 
     @Transactional(readOnly = true)
     public List<NotaFiscalResponse> listar() {
@@ -58,9 +67,12 @@ public class NotaFiscalService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Nota fiscal não encontrada para o pagamento"));
     }
 
+    /** === Emissão === */
+
     /** Emite NFS-e para pagamento confirmado (manual ou automático). */
     @Transactional
     public NotaFiscalResponse emitirParaPagamento(Long pagamentoId) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.NFSE);
         Pagamento pagamento = pagamentoRepository.findById(pagamentoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pagamento não encontrado"));
 
@@ -173,6 +185,8 @@ public class NotaFiscalService {
         aplicarResultado(nota, resultado);
         return toResponse(notaFiscalRepository.save(nota));
     }
+
+    /** === Auxiliares === */
 
     private void aplicarResultado(NotaFiscal nota, NfseProvider.EmissaoResultado resultado) {
         nota.setRespostaJson(resultado.rawJson());

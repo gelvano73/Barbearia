@@ -40,6 +40,8 @@ public class HorarioDisponivelService {
     private final ServicoRepository servicoRepository;
     private final AgendamentoService agendamentoService;
 
+    /** === Disponibilidade === */
+
     /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
     public List<HorarioDisponivelResponse> listar(Long barbeiroId, Long servicoId, LocalDate data, int limite) {
@@ -125,6 +127,8 @@ public class HorarioDisponivelService {
         }
         return livres;
     }
+
+    /** === Auxiliares === */
 
     private Intervalo expedienteDoDia(Long barbeiroId, LocalDate dia) {
         int diaSemana = dia.getDayOfWeek().getValue(); // 1=seg ... 7=dom

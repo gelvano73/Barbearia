@@ -1,9 +1,56 @@
-/**
+﻿/**
  * Catálogo comercial dos planos SaaS (para UI e divulgação).
  * Os valores devem bater com AssinaturaService.precoMensal no backend.
  */
 
 export type PlanoId = 'TRIAL' | 'BASIC' | 'PRO' | 'ENTERPRISE'
+
+export type PlanoRecurso =
+  | 'PAGAMENTO_ONLINE'
+  | 'WHATSAPP'
+  | 'FIDELIDADE'
+  | 'ESTOQUE'
+  | 'COMISSOES'
+  | 'CHECKIN'
+  | 'MARKETPLACE'
+  | 'BACKUP'
+  | 'NFSE'
+  | 'FRANQUIAS'
+  | 'IA_GESTAO'
+
+const RECURSOS_PRO: PlanoRecurso[] = [
+  'PAGAMENTO_ONLINE',
+  'WHATSAPP',
+  'FIDELIDADE',
+  'ESTOQUE',
+  'COMISSOES',
+  'CHECKIN',
+  'MARKETPLACE',
+  'BACKUP',
+]
+
+const RECURSOS_ENTERPRISE: PlanoRecurso[] = [
+  ...RECURSOS_PRO,
+  'NFSE',
+  'FRANQUIAS',
+  'IA_GESTAO',
+]
+
+/** TRIAL e ENTERPRISE liberam tudo; PRO libera o pacote intermediário; BASIC só o núcleo. */
+export function temRecurso(plano: string | undefined | null, recurso: PlanoRecurso): boolean {
+  const p = (plano || 'TRIAL').toUpperCase()
+  if (p === 'TRIAL' || p === 'ENTERPRISE') return true
+  if (p === 'BASIC') return false
+  if (p === 'PRO') return RECURSOS_PRO.includes(recurso)
+  return false
+}
+
+export function recursosDoPlano(plano: string | undefined | null): PlanoRecurso[] {
+  const p = (plano || 'TRIAL').toUpperCase()
+  if (p === 'TRIAL' || p === 'ENTERPRISE') return [...RECURSOS_ENTERPRISE]
+  if (p === 'PRO') return [...RECURSOS_PRO]
+  return []
+}
 
 export type PlanoCatalogo = {
   id: PlanoId

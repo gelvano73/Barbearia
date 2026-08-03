@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
 import { fidelidadeApi } from '../services/resources'
 
+/** === Helpers === */
 function formatDateTime(value) {
   return new Date(value).toLocaleString('pt-BR', {
     day: '2-digit',
@@ -17,6 +18,7 @@ function formatDateTime(value) {
 }
 
 export default function FidelidadePage() {
+  /** === Estado === */
   const [config, setConfig] = useState(null)
   const [saldos, setSaldos] = useState([])
   const [configOpen, setConfigOpen] = useState(false)
@@ -32,7 +34,7 @@ export default function FidelidadePage() {
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const [{ data: cfg }, { data: s }] = await Promise.all([
       fidelidadeApi.config(),
@@ -48,12 +50,11 @@ export default function FidelidadePage() {
     })
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar fidelidade'))
   }, [])
 
-  // Salva a configuração de fidelidade
+  /** === Ações === */
   const salvarConfig = async (e) => {
     e.preventDefault()
     setError('')
@@ -71,7 +72,6 @@ export default function FidelidadePage() {
     }
   }
 
-  // Abre o histórico do cliente selecionado
   const abrirHistorico = async (item) => {
     setSelected(item)
     setError('')
@@ -84,7 +84,6 @@ export default function FidelidadePage() {
     }
   }
 
-  // Resgata pontos de fidelidade
   const resgatar = async (item) => {
     if (!confirm(`Resgatar 1 corte grátis para ${item.clienteNome}? (-${item.pontosParaResgate} pontos)`)) return
     setError('')
@@ -100,6 +99,7 @@ export default function FidelidadePage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Fidelidade</h1>
@@ -110,6 +110,7 @@ export default function FidelidadePage() {
         </button>
       </div>
 
+      {/* === Resumo da regra === */}
       {config && (
         <div className="panel confirm-box" style={{ marginBottom: '1rem' }}>
           <strong>{config.ativo ? 'Programa ativo' : 'Programa inativo'}</strong>
@@ -124,6 +125,7 @@ export default function FidelidadePage() {
         <div className="error" style={{ marginBottom: '1rem' }}>{error}</div>
       )}
 
+      {/* === Saldos === */}
       <div className="panel">
         {saldos.length === 0 ? (
           <div className="empty">
@@ -171,6 +173,7 @@ export default function FidelidadePage() {
         )}
       </div>
 
+      {/* === Modais === */}
       <Modal open={configOpen} title="Regra de fidelidade" onClose={() => setConfigOpen(false)}>
         <form onSubmit={salvarConfig}>
           <div className="form-grid">

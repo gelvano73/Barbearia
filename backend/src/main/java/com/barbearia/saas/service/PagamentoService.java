@@ -19,7 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Registro e consulta de pagamentos vinculados a serviços/agendamentos. */
+/**
+ * Registro e consulta de pagamentos de serviços/agendamentos,
+ * com lançamento no caixa aberto e evento de confirmação.
+ */
 @Service
 @RequiredArgsConstructor
 public class PagamentoService {
@@ -34,7 +37,9 @@ public class PagamentoService {
     private final UsuarioRepository usuarioRepository;
     private final ApplicationEventPublisher eventPublisher;
 
-    /** Lista os registros solicitados. */
+    /** === Consultas === */
+
+    /** Lista pagamentos da barbearia no dia informado (ou hoje). */
     @Transactional(readOnly = true)
     public List<PagamentoResponse> listar(LocalDate data) {
         LocalDate dia = data != null ? data : LocalDate.now();
@@ -45,7 +50,7 @@ public class PagamentoService {
                 .toList();
     }
 
-    /** Busca o registro pelo identificador informado. */
+    /** Busca pagamento pelo id na barbearia atual. */
     @Transactional(readOnly = true)
     public PagamentoResponse buscarPorId(Long id) {
         return toResponse(encontrarNaBarbearia(id));
@@ -57,7 +62,9 @@ public class PagamentoService {
         return encontrarNaBarbearia(id);
     }
 
-    /** Cria um novo registro. */
+    /** === Operações === */
+
+    /** Registra pagamento confirmado, lança no caixa aberto e publica evento. */
     @Transactional
     public PagamentoResponse criar(PagamentoRequest request) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
@@ -119,7 +126,7 @@ public class PagamentoService {
         return toResponse(pagamento);
     }
 
-    /** Cancela o registro ou agendamento. */
+    /** Cancela um pagamento ainda não cancelado. */
     @Transactional
     public void cancelar(Long id) {
         Pagamento pagamento = encontrarNaBarbearia(id);
@@ -129,6 +136,8 @@ public class PagamentoService {
         pagamento.setStatus(StatusPagamento.CANCELADO);
         pagamentoRepository.save(pagamento);
     }
+
+    /** === Auxiliares === */
 
     /** Converte a entidade em DTO de resposta. */
     public PagamentoResponse toResponse(Pagamento p) {

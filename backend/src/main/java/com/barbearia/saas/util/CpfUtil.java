@@ -24,6 +24,8 @@ public final class CpfUtil {
     private CpfUtil() {
     }
 
+    /** === Normalização === */
+
     public static String somenteDigitos(String valor) {
         if (valor == null) {
             return "";
@@ -34,6 +36,8 @@ public final class CpfUtil {
     public static boolean pareceCpf(String valor) {
         return somenteDigitos(valor).length() == 11;
     }
+
+    /** === Validação === */
 
     /** Valida dígitos verificadores (Receita Federal). */
     public static boolean isValido(String valor) {

@@ -5,11 +5,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { portalApi } from '../../services/resources'
 
+/** === Helpers === */
 function bubble(role, text, extra = {}) {
   return { id: crypto.randomUUID(), role, text, ...extra }
 }
 
 export default function PortalIaPage() {
+  /** === Estado === */
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [contexto, setContexto] = useState(null)
@@ -17,7 +19,7 @@ export default function PortalIaPage() {
   const [error, setError] = useState('')
   const endRef = useRef(null)
 
-  // Effect: carga inicial dos dados
+  /** === Efeitos === */
   useEffect(() => {
     setMessages([
       bubble(
@@ -28,12 +30,11 @@ export default function PortalIaPage() {
     ])
   }, [])
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  // Envia mensagem ao assistente
+  /** === Ações do chat === */
   const enviar = async (texto, contextoOverride) => {
     const mensagem = (texto ?? input).trim()
     if (!mensagem || loading) return
@@ -79,7 +80,6 @@ export default function PortalIaPage() {
     }
   }
 
-  // Seleciona horário sugerido pela IA
   const escolherHorario = (h) => {
     const next = {
       ...(contexto || {}),
@@ -92,7 +92,6 @@ export default function PortalIaPage() {
     enviar(`Agendar ${h.label}`, next)
   }
 
-  // Seleciona serviço sugerido pela IA
   const escolherServico = (s) => {
     const next = {
       ...(contexto || {}),
@@ -105,6 +104,7 @@ export default function PortalIaPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>IA de atendimento</h1>
@@ -112,6 +112,7 @@ export default function PortalIaPage() {
         </div>
       </div>
 
+      {/* === Chat === */}
       <div className="panel ia-chat">
         <div className="ia-messages">
           {messages.map((m) => (

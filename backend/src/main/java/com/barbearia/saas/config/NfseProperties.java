@@ -27,6 +27,8 @@ public class NfseProperties {
     /** Emite automaticamente quando o pagamento fica PAGO. */
     private boolean autoEmitir = true;
 
+    /** === Ambiente === */
+
     public String baseUrl() {
         return "producao".equalsIgnoreCase(ambiente) ? baseUrlProducao : baseUrlHomologacao;
     }

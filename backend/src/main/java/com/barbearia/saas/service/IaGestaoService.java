@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.domain.entity.EstoqueMovimento;
 import com.barbearia.saas.domain.entity.Produto;
 import com.barbearia.saas.domain.enums.StatusPagamento;
@@ -24,13 +26,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class IaGestaoService {
 
+    private final PlanoAcessoService planoAcessoService;
+
     private final PagamentoRepository pagamentoRepository;
     private final ProdutoRepository produtoRepository;
     private final EstoqueMovimentoRepository movimentoRepository;
 
+    /** === Previsões === */
+
     /** Gera previsões de faturamento e estoque assistidas por IA. */
     @Transactional(readOnly = true)
     public GestaoPrevisaoResponse previsoes() {
+        planoAcessoService.exigirRecurso(PlanoRecurso.IA_GESTAO);
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
         LocalDate hoje = LocalDate.now();
         LocalDate inicio30 = hoje.minusDays(29);
@@ -114,6 +121,8 @@ public class IaGestaoService {
                 .insight(montarInsight(fator, previsto7, estoque))
                 .build();
     }
+
+    /** === Auxiliares === */
 
     private BigDecimal consumoMedioDiario(Long produtoId) {
         List<EstoqueMovimento> movs = movimentoRepository.findByProdutoIdOrderByCriadoEmDesc(produtoId);

@@ -7,7 +7,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Controle de tentativas de login para mitigar força bruta. */
+/**
+ * Controle de tentativas de login por chave (e-mail/CPF) para mitigar força bruta,
+ * com bloqueio temporário após falhas consecutivas.
+ */
 @Service
 public class LoginAttemptService {
 
@@ -15,6 +18,8 @@ public class LoginAttemptService {
     private static final long BLOQUEIO_MS = 15 * 60_000L;
 
     private final Map<String, Tentativa> tentativas = new ConcurrentHashMap<>();
+
+    /** === Controle de tentativas === */
 
     public void verificarNaoBloqueado(String chave) {
         Tentativa t = tentativas.get(normalizar(chave));
@@ -48,6 +53,8 @@ public class LoginAttemptService {
     public void registrarSucesso(String chave) {
         tentativas.remove(normalizar(chave));
     }
+
+    /** === Auxiliares === */
 
     private String normalizar(String chave) {
         return chave == null ? "" : chave.trim().toLowerCase();

@@ -1,5 +1,6 @@
 package com.barbearia.saas.dto.auth;
 
+import com.barbearia.saas.domain.enums.PlanoAssinatura;
 import com.barbearia.saas.domain.enums.Role;
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +19,5 @@ public class AuthResponse {
     private Role role;
     private Long barbeariaId;
     private String nomeBarbearia;
+    private PlanoAssinatura plano;
 }

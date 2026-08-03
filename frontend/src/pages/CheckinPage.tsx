@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { checkinApi, clientesApi } from '../services/resources'
 
 export default function CheckinPage() {
+  /** === Estado === */
   const [hoje, setHoje] = useState([])
   const [clientes, setClientes] = useState([])
   const [clienteId, setClienteId] = useState('')
@@ -13,19 +14,18 @@ export default function CheckinPage() {
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const [h, c] = await Promise.all([checkinApi.hoje(), clientesApi.listar(true)])
     setHoje(h.data)
     setClientes(c.data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Erro ao carregar check-ins'))
   }, [])
 
-  // Cadastra face do cliente para check-in
+  /** === Ações de check-in === */
   const cadastrarFace = async () => {
     setError('')
     setMsg('')
@@ -42,7 +42,6 @@ export default function CheckinPage() {
     }
   }
 
-  // Realiza check-in por reconhecimento facial
   const checkinFacial = async () => {
     setError('')
     setMsg('')
@@ -60,7 +59,6 @@ export default function CheckinPage() {
     }
   }
 
-  // Realiza check-in manual do cliente
   const checkinManual = async () => {
     if (!clienteId) return
     try {
@@ -74,6 +72,7 @@ export default function CheckinPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Check-in facial</h1>
@@ -83,6 +82,7 @@ export default function CheckinPage() {
       {error && <div className="error">{error}</div>}
       {msg && <p style={{ color: 'var(--ok)' }}>{msg}</p>}
 
+      {/* === Formulário === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <div className="form-grid">
           <label>
@@ -109,6 +109,7 @@ export default function CheckinPage() {
         </p>
       </div>
 
+      {/* === Check-ins de hoje === */}
       <div className="panel">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Check-ins de hoje</h2>
         {hoje.length === 0 ? (

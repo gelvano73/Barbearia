@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { whatsappApi } from '../services/resources'
 
 export default function WhatsappPage() {
+  /** === Estado === */
   const [status, setStatus] = useState(null)
   const [telefone, setTelefone] = useState('11999998888')
   const [mensagem, setMensagem] = useState('oi')
@@ -13,18 +14,16 @@ export default function WhatsappPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Carrega o status da integração
+  /** === Carga e simulação === */
   const carregarStatus = async () => {
     const { data } = await whatsappApi.status()
     setStatus(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregarStatus().catch(() => setError('Não foi possível carregar status do WhatsApp'))
   }, [])
 
-  // Envia mensagem ao assistente
   const enviar = async (e) => {
     e.preventDefault()
     setError('')
@@ -47,6 +46,7 @@ export default function WhatsappPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>WhatsApp · IA</h1>
@@ -56,6 +56,7 @@ export default function WhatsappPage() {
 
       {error && <div className="error">{error}</div>}
 
+      {/* === Status === */}
       {status && (
         <div className="panel" style={{ marginBottom: '1rem' }}>
           <div className="actions-row" style={{ flexWrap: 'wrap', gap: '1.5rem' }}>
@@ -83,6 +84,7 @@ export default function WhatsappPage() {
         </div>
       )}
 
+      {/* === Simular conversa === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Simular conversa</h2>
         <form onSubmit={enviar} className="form-grid">
@@ -105,6 +107,7 @@ export default function WhatsappPage() {
         </form>
       </div>
 
+      {/* === Histórico === */}
       <div className="panel">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Respostas automáticas</h2>
         {historico.length === 0 ? (

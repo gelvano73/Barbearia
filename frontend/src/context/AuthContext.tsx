@@ -11,10 +11,9 @@ import {
 } from 'react'
 import { authApi } from '../services/resources'
 
-/** Papéis possíveis na sessão autenticada. */
+/** === Tipos === */
 export type AuthRole = 'ADMIN' | 'ATENDENTE' | 'BARBEIRO' | 'CLIENTE'
 
-/** Dados da sessão guardados em memória e no localStorage. */
 export type AuthSession = {
   token: string
   role?: AuthRole
@@ -24,6 +23,7 @@ export type AuthSession = {
   barbeariaId?: number
   clienteId?: number
   barbeiroId?: number
+  plano?: string
   [key: string]: unknown
 }
 
@@ -35,6 +35,7 @@ type AuthContextValue = {
   isAtendente: boolean
   isAdmin: boolean
   isStaff: boolean
+  updateAuth: (partial: Partial<AuthSession>) => void
   login: (login: string, senha: string) => Promise<AuthSession>
   registro: (payload: Record<string, unknown>) => Promise<AuthSession>
   loginCliente: (login: string, senha: string) => Promise<AuthSession>
@@ -47,6 +48,7 @@ type AuthContextValue = {
   logout: () => void
 }
 
+/** === Persistência === */
 const AuthContext = createContext<AuthContextValue | null>(null)
 const STORAGE_KEY = 'barbearia_auth'
 
@@ -64,7 +66,7 @@ function persist(data: AuthSession) {
   return data
 }
 
-/** Provedor que expõe estado e ações de autenticação para toda a árvore. */
+/** === Provider === */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [auth, setAuth] = useState<AuthSession | null>(loadStored)
 
@@ -74,6 +76,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data
   }
 
+  const updateAuth = (partial: Partial<AuthSession>) => {
+    setAuth((prev) => {
+      if (!prev) return prev
+      const next = { ...prev, ...partial }
+      persist(next)
+      return next
+    })
+  }
+
+  /** === Logins e registro === */
   const login = async (loginId: string, senha: string) => {
     const { data } = await authApi.login({ login: loginId, senha })
     return setSession(data as AuthSession)
@@ -104,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return setSession(data as AuthSession)
   }
 
+  /** === OTP e OAuth === */
   const enviarOtp = async (loginId: string) => {
     const { data } = await authApi.enviarOtp({ login: loginId })
     return data as { telefoneMascarado?: string; mensagem?: string }
@@ -124,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(STORAGE_KEY)
   }
 
+  /** === Valor do contexto === */
   const value = useMemo<AuthContextValue>(
     () => ({
       auth,
@@ -133,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAtendente: auth?.role === 'ATENDENTE',
       isAdmin: auth?.role === 'ADMIN',
       isStaff: auth?.role === 'ADMIN',
+      updateAuth,
       login,
       registro,
       loginCliente,
@@ -150,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-/** Hook para consumir o contexto de autenticação. */
+/** === Hook === */
 export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth deve ser usado dentro de AuthProvider')

@@ -32,6 +32,8 @@ public class PortalBarbeiroController {
 
     private final PortalBarbeiroService portalBarbeiroService;
 
+    /** === Perfil e dashboard === */
+
     /** Perfil do barbeiro logado. */
     @GetMapping("/perfil")
     @Operation(summary = "Perfil do barbeiro logado")
@@ -52,6 +54,8 @@ public class PortalBarbeiroController {
     public ResponseEntity<BarbeiroDashboardResponse> dashboard() {
         return ResponseEntity.ok(portalBarbeiroService.dashboard());
     }
+
+    /** === Agenda === */
 
     /** Lista a agenda de atendimentos do barbeiro. */
     @GetMapping("/agenda")
@@ -75,6 +79,8 @@ public class PortalBarbeiroController {
             @PathVariable Long id, @Valid @RequestBody AtualizarStatusRequest request) {
         return ResponseEntity.ok(portalBarbeiroService.atualizarStatus(id, request.getStatus()));
     }
+
+    /** === Horários e férias === */
 
     /** Listar horários de trabalho. */
     @GetMapping("/horarios")
@@ -111,6 +117,8 @@ public class PortalBarbeiroController {
         portalBarbeiroService.cancelarFerias(id);
         return ResponseEntity.noContent().build();
     }
+
+    /** === Comissões e metas === */
 
     /** Comissões do período. */
     @GetMapping("/comissoes")

@@ -5,22 +5,21 @@ import { useEffect, useState } from 'react'
 import { barbeiroPortalApi } from '../../services/resources'
 
 export default function BarbeiroFeriasPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [form, setForm] = useState({ dataInicio: '', dataFim: '', motivo: '' })
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga e ações === */
   const carregar = async () => {
     const { data } = await barbeiroPortalApi.ferias()
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Falha ao carregar férias'))
   }, [])
 
-  // Solicita a ação (recuperação/férias)
   const solicitar = async (e) => {
     e.preventDefault()
     setError('')
@@ -33,7 +32,6 @@ export default function BarbeiroFeriasPage() {
     }
   }
 
-  // Cancela o item selecionado
   const cancelar = async (id) => {
     await barbeiroPortalApi.cancelarFerias(id)
     await carregar()
@@ -41,12 +39,14 @@ export default function BarbeiroFeriasPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Férias</h1>
           <p>Controle de folgas e férias</p>
         </div>
       </div>
+      {/* === Solicitar === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <form onSubmit={solicitar}>
           <div className="form-grid">
@@ -69,6 +69,7 @@ export default function BarbeiroFeriasPage() {
           </div>
         </form>
       </div>
+      {/* === Solicitações === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhuma solicitação.</div>

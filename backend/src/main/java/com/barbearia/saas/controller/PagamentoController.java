@@ -32,6 +32,8 @@ public class PagamentoController {
     private final PagamentoOnlineService pagamentoOnlineService;
     private final ReciboPdfService reciboPdfService;
 
+    /** === Consultas === */
+
     /** Listar pagamentos por data. */
     @GetMapping
     @Operation(summary = "Listar pagamentos por data")
@@ -46,6 +48,8 @@ public class PagamentoController {
     public ResponseEntity<PagamentoResponse> buscar(@PathVariable Long id) {
         return ResponseEntity.ok(pagamentoService.buscarPorId(id));
     }
+
+    /** === Operações === */
 
     /** Registrar pagamento. */
     @PostMapping

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
 import { servicosApi } from '../services/resources'
 
+/** === Estado inicial === */
 const empty = {
   nome: '',
   descricao: '',
@@ -14,30 +15,30 @@ const empty = {
   comissaoPercentual: 40,
 }
 
-// Formata valor em Real brasileiro
+/** === Helpers === */
 function formatMoney(value) {
   return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
 export default function ServicosPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(empty)
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const { data } = await servicosApi.listar(true)
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar serviços'))
   }, [])
 
-  // Abre o modal para novo cadastro
+  /** === Ações CRUD === */
   const abrirNovo = () => {
     setEditing(null)
     setForm(empty)
@@ -45,7 +46,6 @@ export default function ServicosPage() {
     setOpen(true)
   }
 
-  // Abre o modal preenchido para edição
   const abrirEdicao = (item) => {
     setEditing(item)
     setForm({
@@ -59,7 +59,6 @@ export default function ServicosPage() {
     setOpen(true)
   }
 
-  // Monta o payload tipado para a API
   const payload = () => ({
     nome: form.nome.trim(),
     descricao: form.descricao.trim() || null,
@@ -68,7 +67,6 @@ export default function ServicosPage() {
     comissaoPercentual: Number(form.comissaoPercentual),
   })
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -85,7 +83,6 @@ export default function ServicosPage() {
     }
   }
 
-  // Desativa o registro selecionado
   const desativar = async (id) => {
     if (!confirm('Desativar este serviço?')) return
     await servicosApi.desativar(id)
@@ -94,6 +91,7 @@ export default function ServicosPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Serviços</h1>
@@ -104,6 +102,7 @@ export default function ServicosPage() {
         </button>
       </div>
 
+      {/* === Tabela de serviços === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhum serviço cadastrado.</div>
@@ -147,6 +146,7 @@ export default function ServicosPage() {
         )}
       </div>
 
+      {/* === Modal === */}
       <Modal open={open} title={editing ? 'Editar serviço' : 'Novo serviço'} onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">

@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** Configuração fiscal e emissão de NFS-e. */
+/**
+ * Endpoints de configuração fiscal do prestador e de consulta/emissão de NFS-e.
+ */
 @RestController
 @RequestMapping("/api/fiscal")
 @RequiredArgsConstructor
@@ -24,6 +26,8 @@ public class FiscalController {
 
     private final ConfigFiscalService configFiscalService;
     private final NotaFiscalService notaFiscalService;
+
+    /** === Configuração === */
 
     @GetMapping("/config")
     @PreAuthorize("hasRole('ADMIN')")
@@ -38,6 +42,8 @@ public class FiscalController {
     public ResponseEntity<ConfigFiscalResponse> salvarConfig(@Valid @RequestBody ConfigFiscalRequest request) {
         return ResponseEntity.ok(configFiscalService.salvar(request));
     }
+
+    /** === Notas fiscais === */
 
     @GetMapping("/notas")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")

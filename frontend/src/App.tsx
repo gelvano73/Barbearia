@@ -58,6 +58,7 @@ import RecepcaoFilaPage from './pages/recepcao/RecepcaoFilaPage'
 import RecepcaoPagamentosPage from './pages/recepcao/RecepcaoPagamentosPage'
 import RecepcaoCaixaPage from './pages/recepcao/RecepcaoCaixaPage'
 import PrivacidadePage from './pages/PrivacidadePage'
+import RequirePlano from './components/RequirePlano'
 
 /** === Guards de rota === */
 function homeForRole(auth) {
@@ -128,7 +129,7 @@ export default function App() {
         <Route path="assistente" element={<PortalIaPage />} />
         <Route path="agendamentos" element={<PortalAgendamentosPage />} />
         <Route path="historico" element={<PortalHistoricoPage />} />
-        <Route path="fidelidade" element={<PortalFidelidadePage />} />
+        <Route path="fidelidade" element={<RequirePlano recurso="FIDELIDADE" fallback="/portal"><PortalFidelidadePage /></RequirePlano>} />
       </Route>
 
       {/* === Portal do barbeiro === */}
@@ -145,7 +146,7 @@ export default function App() {
         <Route path="horarios" element={<BarbeiroHorariosPage />} />
         <Route path="ferias" element={<BarbeiroFeriasPage />} />
         <Route path="historico" element={<BarbeiroHistoricoPage />} />
-        <Route path="comissoes" element={<BarbeiroComissoesPage />} />
+        <Route path="comissoes" element={<RequirePlano recurso="COMISSOES" fallback="/barbeiro"><BarbeiroComissoesPage /></RequirePlano>} />
         <Route path="avaliacoes" element={<BarbeiroAvaliacoesPage />} />
         <Route path="meta" element={<BarbeiroMetaPage />} />
         <Route path="perfil" element={<BarbeiroPerfilPage />} />
@@ -183,18 +184,18 @@ export default function App() {
         <Route path="servicos" element={<ServicosPage />} />
         <Route path="agendamentos" element={<AgendamentosPage />} />
         <Route path="pagamentos" element={<PagamentosPage />} />
-        <Route path="fiscal" element={<FiscalPage />} />
-        <Route path="fidelidade" element={<FidelidadePage />} />
-        <Route path="estoque" element={<EstoquePage />} />
+        <Route path="fiscal" element={<RequirePlano recurso="NFSE"><FiscalPage /></RequirePlano>} />
+        <Route path="fidelidade" element={<RequirePlano recurso="FIDELIDADE"><FidelidadePage /></RequirePlano>} />
+        <Route path="estoque" element={<RequirePlano recurso="ESTOQUE"><EstoquePage /></RequirePlano>} />
         <Route path="caixa" element={<CaixaPage />} />
-        <Route path="comissoes" element={<ComissoesPage />} />
+        <Route path="comissoes" element={<RequirePlano recurso="COMISSOES"><ComissoesPage /></RequirePlano>} />
         <Route path="relatorios" element={<RelatoriosPage />} />
         <Route path="unidades" element={<UnidadesPage />} />
-        <Route path="whatsapp" element={<WhatsappPage />} />
-        <Route path="gestao" element={<GestaoIaPage />} />
-        <Route path="checkin" element={<CheckinPage />} />
-        <Route path="marketplace" element={<MarketplacePage />} />
-        <Route path="franquias" element={<FranquiasPage />} />
+        <Route path="whatsapp" element={<RequirePlano recurso="WHATSAPP"><WhatsappPage /></RequirePlano>} />
+        <Route path="gestao" element={<RequirePlano recurso="IA_GESTAO"><GestaoIaPage /></RequirePlano>} />
+        <Route path="checkin" element={<RequirePlano recurso="CHECKIN"><CheckinPage /></RequirePlano>} />
+        <Route path="marketplace" element={<RequirePlano recurso="MARKETPLACE"><MarketplacePage /></RequirePlano>} />
+        <Route path="franquias" element={<RequirePlano recurso="FRANQUIAS"><FranquiasPage /></RequirePlano>} />
         <Route path="assinatura" element={<AssinaturaPage />} />
       </Route>
 

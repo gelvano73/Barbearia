@@ -1,11 +1,16 @@
 /**
  * Registro e listagem de pagamentos no painel administrativo.
+ * Inclui recibo, cancelamento e emissão de NFS-e por pagamento.
  */
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Modal from '../components/Modal'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
+import { useAuth } from '../context/AuthContext'
+import { temRecurso } from '../data/planos'
 import { clientesApi, fiscalApi, pagamentosApi, servicosApi } from '../services/resources'
 
+/** === Constantes e helpers === */
 const FORMAS = [
   { value: 'PIX', label: 'PIX' },
   { value: 'CREDITO', label: 'Crédito' },
@@ -32,6 +37,12 @@ const empty = {
 }
 
 export default function PagamentosPage() {
+  /** === Estado === */
+  const { isAdmin, auth } = useAuth()
+  const podeOnline = temRecurso(auth?.plano as string | undefined, 'PAGAMENTO_ONLINE')
+  const podeNfse = temRecurso(auth?.plano as string | undefined, 'NFSE')
+  const [searchParams] = useSearchParams()
+  const mpRetorno = searchParams.get('mp')
   const [itens, setItens] = useState([])
   const [clientes, setClientes] = useState([])
   const [servicos, setServicos] = useState([])
@@ -40,8 +51,9 @@ export default function PagamentosPage() {
   const [filtroData, setFiltroData] = useState(hojeISO)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [mpStatus, setMpStatus] = useState(null)
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const [{ data: pags }, { data: cls }, { data: svs }] = await Promise.all([
       pagamentosApi.listar({ data: filtroData }),
@@ -53,7 +65,6 @@ export default function PagamentosPage() {
     setServicos(svs)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     setLoading(true)
     carregar()
@@ -61,19 +72,26 @@ export default function PagamentosPage() {
       .finally(() => setLoading(false))
   }, [filtroData])
 
+  useEffect(() => {
+    if (!isAdmin) return
+    pagamentosApi
+      .mercadoPagoStatus()
+      .then(({ data }) => setMpStatus(data))
+      .catch(() => setMpStatus(null))
+  }, [isAdmin])
+
   const podeRegistrar = useMemo(
     () => clientes.length > 0 && servicos.length > 0,
     [clientes, servicos],
   )
 
-  // Abre o modal para novo cadastro
+  /** === Ações do formulário === */
   const abrirNovo = () => {
     setForm({ ...empty, dataPagamento: filtroData || hojeISO() })
     setError('')
     setOpen(true)
   }
 
-  // Seleciona serviço sugerido pela IA
   const escolherServico = (servicoId) => {
     const s = servicos.find((x) => String(x.id) === String(servicoId))
     setForm((prev) => ({
@@ -83,7 +101,6 @@ export default function PagamentosPage() {
     }))
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -116,7 +133,7 @@ export default function PagamentosPage() {
     window.open(pagamentosApi.reciboUrl(id), '_blank', 'noopener,noreferrer')
   }
 
-  // Cancela o item selecionado
+  /** === Ações da listagem === */
   const cancelar = async (id) => {
     if (!confirm('Cancelar este pagamento?')) return
     await pagamentosApi.cancelar(id)
@@ -125,6 +142,7 @@ export default function PagamentosPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Pagamentos</h1>
@@ -135,8 +153,33 @@ export default function PagamentosPage() {
         </button>
       </div>
 
+      {mpRetorno === 'success' && (
+        <p className="success" style={{ marginBottom: '0.8rem' }}>
+          Retorno Mercado Pago: sucesso. Aguarde a confirmação do webhook para marcar como pago.
+        </p>
+      )}
+      {mpRetorno === 'failure' && (
+        <p className="error" style={{ marginBottom: '0.8rem' }}>Pagamento Mercado Pago não concluído.</p>
+      )}
+      {mpRetorno === 'pending' && (
+        <p className="subtitle" style={{ marginBottom: '0.8rem' }}>
+          Pagamento pendente (ex.: Pix). O status atualiza quando o webhook confirmar.
+        </p>
+      )}
+      {mpStatus && (
+        <div className="panel" style={{ marginBottom: '1rem' }}>
+          <p style={{ margin: 0 }}>
+            Mercado Pago: {mpStatus.configurado ? 'configurado' : 'não configurado'}
+            {mpStatus.ambienteProvavel ? ` · ${mpStatus.ambienteProvavel}` : ''}
+            {mpStatus.allowSimulated ? ' · simulado ligado' : ''}
+          </p>
+          {mpStatus.aviso && <p className="subtitle" style={{ margin: '0.4rem 0 0' }}>{mpStatus.aviso}</p>}
+        </div>
+      )}
+
       {loading && <LoadingState label="Carregando pagamentos…" />}
 
+      {/* === Filtros === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <label style={{ maxWidth: 260 }}>
           Data
@@ -147,6 +190,7 @@ export default function PagamentosPage() {
         )}
       </div>
 
+      {/* === Tabela de pagamentos === */}
       <div className="panel">
         {!loading && itens.length === 0 ? (
           <EmptyState>Nenhum pagamento nesta data.</EmptyState>
@@ -180,7 +224,7 @@ export default function PagamentosPage() {
                         <button className="btn secondary small" type="button" onClick={() => abrirRecibo(item.id)}>
                           Recibo
                         </button>
-                        {item.status === 'PAGO' && (
+                        {item.status === 'PAGO' && podeNfse && (
                           <button
                             className="btn secondary small"
                             type="button"
@@ -214,6 +258,7 @@ export default function PagamentosPage() {
         )}
       </div>
 
+      {/* === Modal de registro === */}
       <Modal open={open} title="Registrar pagamento" onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">
@@ -290,6 +335,7 @@ export default function PagamentosPage() {
                 placeholder="Opcional"
               />
             </label>
+            {podeOnline && (
             <label className="full aceite-privacidade" style={{ cursor: 'pointer' }}>
               <input
                 type="checkbox"
@@ -298,6 +344,12 @@ export default function PagamentosPage() {
               />
               <span>Pagamento online (Mercado Pago / PIX link) — gera checkout e deixa status pendente até confirmar</span>
             </label>
+            )}
+            {!podeOnline && (
+              <p className="subtitle" style={{ gridColumn: '1 / -1', margin: 0 }}>
+                Pagamento online disponível a partir do plano Pro. Veja em Assinatura.
+              </p>
+            )}
           </div>
           {error && <div className="error" style={{ marginTop: '0.8rem' }}>{error}</div>}
           <div className="modal-actions">

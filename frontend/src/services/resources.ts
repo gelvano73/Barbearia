@@ -4,7 +4,7 @@
  */
 import api from './api'
 
-/** Autenticação e cadastro (admin, cliente, barbeiro, recepção, OAuth). */
+/** === Auth === */
 export const authApi = {
   login: (payload) => api.post('/auth/login', payload),
   registro: (payload) => api.post('/auth/registro', payload),
@@ -21,7 +21,7 @@ export const authApi = {
   listarBarbearias: () => api.get('/auth/barbearias'),
 }
 
-/** CRUD de clientes no painel administrativo. */
+/** === Clientes === */
 export const clientesApi = {
   listar: (apenasAtivos = true) => api.get('/clientes', { params: { apenasAtivos } }),
   criar: (payload) => api.post('/clientes', payload),
@@ -36,7 +36,7 @@ export const clientesApi = {
   },
 }
 
-/** CRUD de barbeiros, contas de acesso, metas e foto. */
+/** === Barbeiros === */
 export const barbeirosApi = {
   listar: (apenasAtivos = true) => api.get('/barbeiros', { params: { apenasAtivos } }),
   criar: (payload) => api.post('/barbeiros', payload),
@@ -53,7 +53,7 @@ export const barbeirosApi = {
   },
 }
 
-/** CRUD de serviços oferecidos pela barbearia. */
+/** === Serviços === */
 export const servicosApi = {
   listar: (apenasAtivos = true) => api.get('/servicos', { params: { apenasAtivos } }),
   criar: (payload) => api.post('/servicos', payload),
@@ -61,7 +61,7 @@ export const servicosApi = {
   desativar: (id) => api.delete(`/servicos/${id}`),
 }
 
-/** Agendamentos: listagem, horários livres, criação e status. */
+/** === Agendamentos === */
 export const agendamentosApi = {
   listar: (params = {}) => api.get('/agendamentos', { params }),
   horariosDisponiveis: (params = {}) => api.get('/agendamentos/horarios-disponiveis', { params }),
@@ -71,16 +71,17 @@ export const agendamentosApi = {
   cancelar: (id) => api.delete(`/agendamentos/${id}`),
 }
 
-/** Pagamentos registrados no painel administrativo. */
+/** === Pagamentos === */
 export const pagamentosApi = {
   listar: (params = {}) => api.get('/pagamentos', { params }),
   criar: (payload) => api.post('/pagamentos', payload),
   criarOnline: (payload) => api.post('/pagamentos/online', payload),
   reciboUrl: (id) => `/api/pagamentos/${id}/recibo`,
   cancelar: (id) => api.delete(`/pagamentos/${id}`),
+  mercadoPagoStatus: () => api.get('/pagamentos/mercadopago/status'),
 }
 
-/** NFS-e e configuração fiscal do prestador. */
+/** === Fiscal === */
 export const fiscalApi = {
   config: () => api.get('/fiscal/config'),
   salvarConfig: (payload) => api.put('/fiscal/config', payload),
@@ -90,19 +91,19 @@ export const fiscalApi = {
   consultarNota: (id) => api.post(`/fiscal/notas/${id}/consultar`),
 }
 
-/** Assinatura SaaS do tenant. */
+/** === Assinatura === */
 export const assinaturaApi = {
   status: () => api.get('/assinatura'),
   upgrade: (plano: string) => api.post('/assinatura/upgrade', { plano }),
 }
 
-/** Backup administrativo. */
+/** === Backup === */
 export const backupApi = {
   listar: () => api.get('/backup'),
   executar: () => api.post('/backup/executar'),
 }
 
-/** Programa de fidelidade: config, saldos, histórico e resgates. */
+/** === Fidelidade === */
 export const fidelidadeApi = {
   config: () => api.get('/fidelidade/config'),
   atualizarConfig: (payload) => api.put('/fidelidade/config', payload),
@@ -112,7 +113,7 @@ export const fidelidadeApi = {
   resgatar: (payload) => api.post('/fidelidade/resgatar', payload),
 }
 
-/** Estoque: produtos e movimentações. */
+/** === Estoque === */
 export const estoqueApi = {
   produtos: (apenasAtivos = true) => api.get('/estoque/produtos', { params: { apenasAtivos } }),
   criarProduto: (payload) => api.post('/estoque/produtos', payload),
@@ -122,7 +123,7 @@ export const estoqueApi = {
   movimentar: (payload) => api.post('/estoque/movimentos', payload),
 }
 
-/** Caixa: abertura, fechamento, sangria e suprimento. */
+/** === Caixa === */
 export const caixaApi = {
   atual: () => api.get('/caixa'),
   historico: () => api.get('/caixa/historico'),
@@ -132,18 +133,18 @@ export const caixaApi = {
   suprimento: (payload) => api.post('/caixa/suprimento', payload),
 }
 
-/** Comissões de barbeiros (listagem e consolidado mensal). */
+/** === Comissões === */
 export const comissoesApi = {
   listar: (params = {}) => api.get('/comissoes', { params }),
   mensal: (params = {}) => api.get('/comissoes/mensal', { params }),
 }
 
-/** Relatórios gerenciais do painel. */
+/** === Relatórios === */
 export const relatoriosApi = {
   gerar: (params = {}) => api.get('/relatorios', { params }),
 }
 
-/** Unidades/filiais da barbearia. */
+/** === Unidades === */
 export const unidadesApi = {
   listar: (apenasAtivos = true) => api.get('/unidades', { params: { apenasAtivos } }),
   criar: (payload) => api.post('/unidades', payload),
@@ -151,18 +152,18 @@ export const unidadesApi = {
   desativar: (id) => api.delete(`/unidades/${id}`),
 }
 
-/** Integração WhatsApp / simulação de mensagens com IA. */
+/** === WhatsApp === */
 export const whatsappApi = {
   status: () => api.get('/whatsapp/status'),
   simular: (payload) => api.post('/whatsapp/simular', payload),
 }
 
-/** Previsões e insights de gestão com IA. */
+/** === Gestão IA === */
 export const gestaoApi = {
   previsoes: () => api.get('/gestao/previsoes'),
 }
 
-/** Check-in manual e facial de clientes. */
+/** === Check-in === */
 export const checkinApi = {
   hoje: () => api.get('/checkin/hoje'),
   manual: (clienteId) => api.post(`/checkin/manual/${clienteId}`),
@@ -182,19 +183,19 @@ export const checkinApi = {
   },
 }
 
-/** Pedidos do marketplace (visão administrativa). */
+/** === Marketplace admin === */
 export const marketplaceApi = {
   pedidos: () => api.get('/marketplace/pedidos'),
   atualizarStatus: (id, status) => api.patch(`/marketplace/pedidos/${id}/status`, { status }),
 }
 
-/** Marketplace público (loja sem autenticação). */
+/** === Marketplace público === */
 export const marketplacePublicApi = {
   produtos: (barbeariaId) => api.get(`/public/marketplace/${barbeariaId}/produtos`),
   criarPedido: (barbeariaId, payload) => api.post(`/public/marketplace/${barbeariaId}/pedidos`, payload),
 }
 
-/** Rede de franquias: visão, empresas e vínculos. */
+/** === Franquias === */
 export const franquiasApi = {
   visao: () => api.get('/franquias/visao'),
   empresas: () => api.get('/franquias/empresas'),
@@ -202,7 +203,7 @@ export const franquiasApi = {
   vincular: (empresaId) => api.post(`/franquias/empresas/${empresaId}/vincular`),
 }
 
-/** Portal do cliente: perfil, agenda, fidelidade e chat IA. */
+/** === Portal cliente === */
 export const portalApi = {
   perfil: () => api.get('/portal/perfil'),
   atualizarPerfil: (payload) => api.put('/portal/perfil', payload),
@@ -226,7 +227,7 @@ export const portalApi = {
   iaChat: (payload) => api.post('/portal/ia/chat', payload),
 }
 
-/** Portal do barbeiro: agenda, horários, férias, comissões e meta. */
+/** === Portal barbeiro === */
 export const barbeiroPortalApi = {
   perfil: () => api.get('/barbeiro/perfil'),
   uploadFoto: (file) => {
@@ -250,7 +251,7 @@ export const barbeiroPortalApi = {
   meta: (params = {}) => api.get('/barbeiro/meta', { params }),
 }
 
-/** API da recepção: clientes, agenda, fila, pagamentos e caixa. */
+/** === Recepção === */
 export const recepcaoApi = {
   clientes: () => api.get('/recepcao/clientes'),
   criarCliente: (payload) => api.post('/recepcao/clientes', payload),

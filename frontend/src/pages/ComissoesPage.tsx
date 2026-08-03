@@ -4,16 +4,19 @@
 import { useEffect, useState } from 'react'
 import { barbeirosApi, comissoesApi } from '../services/resources'
 
+/** === Helpers === */
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+/** === Constantes === */
 const MESES = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
 export default function ComissoesPage() {
+  /** === Estado === */
   const now = new Date()
   const [ano, setAno] = useState(now.getFullYear())
   const [mes, setMes] = useState(now.getMonth() + 1)
@@ -23,7 +26,7 @@ export default function ComissoesPage() {
   const [detalhes, setDetalhes] = useState([])
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     setError('')
     const params = { ano, mes }
@@ -38,18 +41,17 @@ export default function ComissoesPage() {
     setDetalhes(lista.data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     barbeirosApi.listar(true).then(({ data }) => setBarbeiros(data)).catch(() => {})
   }, [])
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar as comissões'))
   }, [ano, mes, barbeiroId])
 
   return (
     <>
+      {/* === Cabeçalho e filtros === */}
       <div className="page-header">
         <div>
           <h1>Comissões</h1>
@@ -84,6 +86,7 @@ export default function ComissoesPage() {
 
       {error && <div className="error">{error}</div>}
 
+      {/* === Resumo === */}
       {resumo && (
         <div className="panel" style={{ marginBottom: '1rem' }}>
           <div className="actions-row" style={{ flexWrap: 'wrap', gap: '1.5rem' }}>
@@ -103,6 +106,7 @@ export default function ComissoesPage() {
         </div>
       )}
 
+      {/* === Ranking === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Ranking do mês</h2>
         {!resumo?.ranking?.length ? (
@@ -133,6 +137,7 @@ export default function ComissoesPage() {
         )}
       </div>
 
+      {/* === Detalhe === */}
       <div className="panel">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>
           {barbeiroId ? 'Comissões do barbeiro' : 'Detalhe por atendimento'}

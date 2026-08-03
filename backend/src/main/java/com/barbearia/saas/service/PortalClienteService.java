@@ -43,6 +43,8 @@ public class PortalClienteService {
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
+    /** === Perfil === */
+
     /** Retorna o perfil do usuário autenticado. */
     @Transactional(readOnly = true)
     public PerfilResponse getPerfil() {
@@ -96,6 +98,8 @@ public class PortalClienteService {
         }
     }
 
+    /** === Agendamentos === */
+
     /** Lista meus agendamentos. */
     @Transactional(readOnly = true)
     public List<AgendamentoResponse> listarMeusAgendamentos() {
@@ -114,6 +118,8 @@ public class PortalClienteService {
                 .map(a -> agendamentoService.toResponse(a, podeAvaliar(a)))
                 .toList();
     }
+
+    /** === Catálogo === */
 
     /** Lista barbeiros. */
     @Transactional(readOnly = true)
@@ -142,6 +148,8 @@ public class PortalClienteService {
         }
         return servicos.stream().map(this::toServicoResponse).toList();
     }
+
+    /** === Operações de agenda === */
 
     /** Cria um agendamento. */
     @Transactional
@@ -216,6 +224,8 @@ public class PortalClienteService {
         agendamentoRepository.save(agendamento);
     }
 
+    /** === Avaliações === */
+
     /** Registra uma avaliação do atendimento. */
     @Transactional
     public AvaliacaoResponse avaliar(AvaliacaoRequest request) {
@@ -249,6 +259,8 @@ public class PortalClienteService {
                 .criadoEm(salva.getCriadoEm())
                 .build();
     }
+
+    /** === Auxiliares === */
 
     private void seedServicosPadrao(Long barbeariaId) {
         Barbearia barbearia = clienteRepository.findById(SecurityUtils.getClienteIdAtual())

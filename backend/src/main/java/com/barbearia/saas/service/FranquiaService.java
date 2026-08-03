@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.domain.entity.Barbearia;
 import com.barbearia.saas.domain.entity.Empresa;
 import com.barbearia.saas.domain.entity.Unidade;
@@ -21,6 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FranquiaService {
 
+    private final PlanoAcessoService planoAcessoService;
+
     private final EmpresaRepository empresaRepository;
     private final BarbeariaRepository barbeariaRepository;
     private final UnidadeRepository unidadeRepository;
@@ -34,6 +38,7 @@ public class FranquiaService {
     /** Cria empresa. */
     @Transactional
     public EmpresaResponse criarEmpresa(EmpresaRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.FRANQUIAS);
         if (request.getCnpj() != null && !request.getCnpj().isBlank()
                 && empresaRepository.existsByCnpj(request.getCnpj().replaceAll("\\D", ""))) {
             throw new NegocioException("CNPJ já cadastrado");
@@ -51,6 +56,7 @@ public class FranquiaService {
     /** Vincula a barbearia atual a uma empresa/franquia. */
     @Transactional
     public EmpresaResponse vincularBarbeariaAtual(Long empresaId) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.FRANQUIAS);
         Empresa empresa = empresaRepository.findById(empresaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Empresa não encontrada"));
         Barbearia barbearia = barbeariaRepository.findById(SecurityUtils.getBarbeariaIdAtual())

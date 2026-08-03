@@ -27,7 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/** Cadastro, atualização e desativação de barbeiros, inclusive foto de perfil. */
+/**
+ * Cadastro e manutenção de barbeiros: CRUD, foto, conta de acesso (role BARBEIRO)
+ * e metas mensais de atendimentos/comissão.
+ */
 @Service
 @RequiredArgsConstructor
 public class BarbeiroService {
@@ -39,8 +42,11 @@ public class BarbeiroService {
     private final PasswordEncoder passwordEncoder;
     private final FotoStorageService fotoStorageService;
     private final EmailDominioService emailDominioService;
+    private final PlanoAcessoService planoAcessoService;
 
-    /** Lista os registros solicitados. */
+    /** === Consultas === */
+
+    /** Lista barbeiros da barbearia atual (ativos ou todos). */
     @Transactional(readOnly = true)
     public List<BarbeiroResponse> listar(boolean apenasAtivos) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
@@ -50,16 +56,19 @@ public class BarbeiroService {
         return barbeiros.stream().map(this::toResponse).toList();
     }
 
-    /** Busca o registro pelo identificador informado. */
+    /** Busca barbeiro pelo id, restrito à barbearia do usuário autenticado. */
     @Transactional(readOnly = true)
     public BarbeiroResponse buscarPorId(Long id) {
         return toResponse(encontrarNaBarbearia(id));
     }
 
-    /** Cria um novo registro. */
+    /** === CRUD === */
+
+    /** Cadastra um novo barbeiro na barbearia atual. */
     @Transactional
     public BarbeiroResponse criar(BarbeiroRequest request) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
+        planoAcessoService.exigirPodeCriarBarbeiro();
         Barbearia barbearia = barbeariaRepository.findById(barbeariaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Barbearia não encontrada"));
 
@@ -74,7 +83,7 @@ public class BarbeiroService {
         return toResponse(barbeiroRepository.save(barbeiro));
     }
 
-    /** Atualiza o registro existente. */
+    /** Atualiza dados cadastrais do barbeiro. */
     @Transactional
     public BarbeiroResponse atualizar(Long id, BarbeiroRequest request) {
         Barbeiro barbeiro = encontrarNaBarbearia(id);
@@ -84,7 +93,7 @@ public class BarbeiroService {
         return toResponse(barbeiroRepository.save(barbeiro));
     }
 
-    /** Faz upload e associa a foto ao registro. */
+    /** Faz upload e associa a foto de perfil do barbeiro. */
     @Transactional
     public BarbeiroResponse uploadFoto(Long id, MultipartFile arquivo) {
         Barbeiro barbeiro = encontrarNaBarbearia(id);
@@ -93,7 +102,7 @@ public class BarbeiroService {
         return toResponse(barbeiroRepository.save(barbeiro));
     }
 
-    /** Desativa o registro (soft delete). */
+    /** Desativa o barbeiro (soft delete). */
     @Transactional
     public void desativar(Long id) {
         Barbeiro barbeiro = encontrarNaBarbearia(id);
@@ -101,7 +110,9 @@ public class BarbeiroService {
         barbeiroRepository.save(barbeiro);
     }
 
-    /** Cria conta. */
+    /** === Conta e metas === */
+
+    /** Cria usuário de acesso (role BARBEIRO) vinculado ao cadastro. */
     @Transactional
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     public BarbeiroResponse criarConta(Long id, CriarContaBarbeiroRequest request) {
@@ -128,7 +139,7 @@ public class BarbeiroService {
         return toResponse(barbeiroRepository.save(barbeiro));
     }
 
-    /** Define a meta do barbeiro. */
+    /** Define ou atualiza a meta mensal de atendimentos/comissão. */
     @Transactional
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     public MetaProgressoResponse definirMeta(Long id, MetaRequest request) {
@@ -155,6 +166,8 @@ public class BarbeiroService {
                 .percentualComissao(0.0)
                 .build();
     }
+
+    /** === Auxiliares === */
 
     private Barbeiro encontrarNaBarbearia(Long id) {
         return barbeiroRepository.findByIdAndBarbeariaId(id, SecurityUtils.getBarbeariaIdAtual())

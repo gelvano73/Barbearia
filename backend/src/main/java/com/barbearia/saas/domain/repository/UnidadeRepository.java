@@ -21,4 +21,6 @@ public interface UnidadeRepository extends JpaRepository<Unidade, Long> {
     boolean existsByBarbeariaIdAndNomeIgnoreCaseAndAtivoTrue(Long barbeariaId, String nome);
 
     boolean existsByBarbeariaIdAndNomeIgnoreCaseAndAtivoTrueAndIdNot(Long barbeariaId, String nome, Long id);
+
+    long countByBarbeariaIdAndAtivoTrue(Long barbeariaId);
 }

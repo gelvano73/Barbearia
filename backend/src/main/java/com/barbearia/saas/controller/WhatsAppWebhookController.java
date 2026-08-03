@@ -18,6 +18,8 @@ public class WhatsAppWebhookController {
 
     private final WhatsAppAtendimentoService whatsAppAtendimentoService;
 
+    /** === Verificação === */
+
     /** Verifica o desafio (challenge) do webhook WhatsApp. */
     @GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> verificar(
@@ -29,6 +31,8 @@ public class WhatsAppWebhookController {
         }
         return ResponseEntity.status(403).body("Forbidden");
     }
+
+    /** === Eventos === */
 
     /** Processa mensagens/eventos recebidos do WhatsApp. */
     @PostMapping

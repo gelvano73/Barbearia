@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,6 +31,8 @@ class AssinaturaServiceTest {
     private BarbeariaRepository barbeariaRepository;
     @Mock
     private MercadoPagoClient mercadoPagoClient;
+    @Mock
+    private PlanoAcessoService planoAcessoService;
 
     @InjectMocks
     private AssinaturaService assinaturaService;
@@ -55,6 +58,11 @@ class AssinaturaServiceTest {
                 new UsernamePasswordAuthenticationToken(principal, null, List.of()));
 
         when(barbeariaRepository.findById(1L)).thenReturn(Optional.of(barbearia));
+        when(planoAcessoService.resumoAcesso()).thenReturn(new java.util.LinkedHashMap<>(Map.of(
+                "plano", "TRIAL",
+                "recursos", java.util.Set.of("BACKUP", "NFSE"),
+                "unidadesUsadas", 1L
+        )));
 
         AssinaturaResponse response = assinaturaService.getStatus();
 
@@ -63,6 +71,8 @@ class AssinaturaServiceTest {
         assertThat(response.getStatus()).isEqualTo(StatusAssinatura.ATIVA);
         assertThat(response.isEmTeste()).isTrue();
         assertThat(response.getDiasRestantes()).isGreaterThan(0);
+        assertThat(response.getRecursos()).contains("BACKUP");
+        assertThat(response.getLimites()).containsEntry("unidadesUsadas", 1L);
     }
 
     @Test

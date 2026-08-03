@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/** Endpoints públicos auxiliares para o fluxo de pagamento (checkout simulado em desenvolvimento). */
+/**
+ * Endpoints públicos do fluxo de checkout, inclusive confirmação
+ * de pagamento/assinatura simulados (desenvolvimento).
+ */
 @RestController
 @RequestMapping("/api/public/pagamentos")
 @RequiredArgsConstructor
@@ -29,6 +32,8 @@ public class PagamentoPublicoController {
     private final AssinaturaService assinaturaService;
     private final ApplicationEventPublisher eventPublisher;
     private final MercadoPagoProperties mercadoPagoProperties;
+
+    /** === Checkout simulado === */
 
     /** Marca o pagamento/assinatura simulado (sem gateway configurado) como pago. Uso em desenvolvimento. */
     @GetMapping("/simulado/{referencia}")

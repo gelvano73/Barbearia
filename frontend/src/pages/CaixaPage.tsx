@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
 import { caixaApi } from '../services/resources'
 
+/** === Helpers === */
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
@@ -21,6 +22,7 @@ function formatDateTime(value) {
 }
 
 export default function CaixaPage() {
+  /** === Estado === */
   const [caixa, setCaixa] = useState(null)
   const [error, setError] = useState('')
   const [abrirOpen, setAbrirOpen] = useState(false)
@@ -32,18 +34,16 @@ export default function CaixaPage() {
   const [movDesc, setMovDesc] = useState('')
   const [obs, setObs] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga e operações === */
   const carregar = async () => {
     const { data } = await caixaApi.atual()
     setCaixa(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar o caixa'))
   }, [])
 
-  // Abre o caixa do dia
   const abrir = async (e) => {
     e.preventDefault()
     setError('')
@@ -60,7 +60,6 @@ export default function CaixaPage() {
     }
   }
 
-  // Fecha o caixa do dia
   const fechar = async (e) => {
     e.preventDefault()
     setError('')
@@ -77,7 +76,6 @@ export default function CaixaPage() {
     }
   }
 
-  // Registra sangria ou suprimento
   const movimento = async (e) => {
     e.preventDefault()
     setError('')
@@ -97,6 +95,7 @@ export default function CaixaPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Caixa diário</h1>
@@ -134,6 +133,7 @@ export default function CaixaPage() {
 
       {error && <div className="error" style={{ marginBottom: '1rem' }}>{error}</div>}
 
+      {/* === Resumo e movimentos === */}
       {!caixa ? (
         <div className="panel">
           <div className="empty">Abra o caixa para registrar pagamentos e movimentos do dia.</div>
@@ -202,6 +202,7 @@ export default function CaixaPage() {
         </>
       )}
 
+      {/* === Modais === */}
       <Modal open={abrirOpen} title="Abrir caixa" onClose={() => setAbrirOpen(false)}>
         <form onSubmit={abrir}>
           <label>

@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/** DTO de resposta da configuração fiscal da barbearia e prontidão para NFS-e. */
 @Data
 @Builder
 public class ConfigFiscalResponse {

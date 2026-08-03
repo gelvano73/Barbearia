@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { relatoriosApi } from '../services/resources'
 
+/** === Helpers === */
 function money(v) {
   return Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
@@ -14,6 +15,7 @@ function formatDate(value) {
   return `${d}/${m}/${y}`
 }
 
+/** === Constantes === */
 const PERIODOS = [
   { value: 'DIARIO', label: 'Diário' },
   { value: 'SEMANAL', label: 'Semanal' },
@@ -21,13 +23,14 @@ const PERIODOS = [
 ]
 
 export default function RelatoriosPage() {
+  /** === Estado === */
   const today = new Date().toISOString().slice(0, 10)
   const [periodo, setPeriodo] = useState('MENSAL')
   const [data, setData] = useState(today)
   const [relatorio, setRelatorio] = useState(null)
   const [error, setError] = useState('')
 
-  // Effect: carga inicial dos dados
+  /** === Carga de dados === */
   useEffect(() => {
     setError('')
     relatoriosApi
@@ -40,6 +43,7 @@ export default function RelatoriosPage() {
 
   return (
     <>
+      {/* === Cabeçalho e filtros === */}
       <div className="page-header">
         <div>
           <h1>Relatórios</h1>
@@ -69,6 +73,7 @@ export default function RelatoriosPage() {
 
       {relatorio && (
         <>
+          {/* === Resumo === */}
           <div className="panel" style={{ marginBottom: '1rem' }}>
             <div className="actions-row" style={{ flexWrap: 'wrap', gap: '1.5rem' }}>
               <div>
@@ -93,6 +98,7 @@ export default function RelatoriosPage() {
             </p>
           </div>
 
+          {/* === Faturamento por dia === */}
           <div className="panel" style={{ marginBottom: '1rem' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Faturamento por dia</h2>
             {!relatorio.faturamentoPorDia?.length ? (
@@ -119,6 +125,7 @@ export default function RelatoriosPage() {
             )}
           </div>
 
+          {/* === Serviços mais vendidos === */}
           <div className="panel" style={{ marginBottom: '1rem' }}>
             <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Serviços mais vendidos</h2>
             {!relatorio.servicosMaisVendidos?.length ? (
@@ -147,6 +154,7 @@ export default function RelatoriosPage() {
             )}
           </div>
 
+          {/* === Clientes mais frequentes === */}
           <div className="panel">
             <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Clientes mais frequentes</h2>
             {!relatorio.clientesMaisFrequentes?.length ? (

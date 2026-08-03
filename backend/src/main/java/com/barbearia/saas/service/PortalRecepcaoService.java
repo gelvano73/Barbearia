@@ -47,7 +47,7 @@ public class PortalRecepcaoService {
     private final PagamentoService pagamentoService;
     private final CaixaService caixaService;
 
-    // ---- Clientes / Agendamentos (manual) ----
+    /** === Clientes e agendamentos === */
 
     /** Lista clientes. */
     @Transactional(readOnly = true)
@@ -108,7 +108,7 @@ public class PortalRecepcaoService {
         return agendamentoService.atualizarStatus(id, status);
     }
 
-    // ---- Fila ----
+    /** === Fila === */
 
     /** Lista fila. */
     @Transactional(readOnly = true)
@@ -164,7 +164,7 @@ public class PortalRecepcaoService {
         return toFila(filaRepository.save(item));
     }
 
-    // ---- Caixa ----
+    /** === Caixa === */
 
     /** Retorna o caixa aberto (ou atual) da unidade. */
     @Transactional(readOnly = true)
@@ -196,7 +196,7 @@ public class PortalRecepcaoService {
         return caixaService.suprimento(request);
     }
 
-    // ---- Pagamentos ----
+    /** === Pagamentos === */
 
     /** Lista pagamentos. */
     @Transactional(readOnly = true)
@@ -210,6 +210,8 @@ public class PortalRecepcaoService {
         caixaService.getCaixaAberto(); // recepção só recebe com caixa aberto
         return pagamentoService.criar(request);
     }
+
+    /** === Auxiliares === */
 
     private FilaResponse toFila(FilaAtendimento f) {
         return FilaResponse.builder()

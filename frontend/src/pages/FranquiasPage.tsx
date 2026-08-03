@@ -6,24 +6,23 @@ import { useEffect, useState } from 'react'
 import { franquiasApi } from '../services/resources'
 
 export default function FranquiasPage() {
+  /** === Estado === */
   const [visao, setVisao] = useState(null)
   const [empresas, setEmpresas] = useState([])
   const [nome, setNome] = useState('')
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga e ações === */
   const carregar = async () => {
     const [v, e] = await Promise.all([franquiasApi.visao(), franquiasApi.empresas()])
     setVisao(v.data)
     setEmpresas(e.data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Erro ao carregar franquias'))
   }, [])
 
-  // Cria o registro no formulário
   const criar = async (e) => {
     e.preventDefault()
     await franquiasApi.criarEmpresa({ nome })
@@ -31,7 +30,6 @@ export default function FranquiasPage() {
     await carregar()
   }
 
-  // Vincula empresa à rede de franquias
   const vincular = async (id) => {
     await franquiasApi.vincular(id)
     await carregar()
@@ -39,6 +37,7 @@ export default function FranquiasPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Franquias</h1>
@@ -46,6 +45,7 @@ export default function FranquiasPage() {
         </div>
       </div>
       {error && <div className="error">{error}</div>}
+      {/* === Visão atual === */}
       {visao && (
         <div className="panel" style={{ marginBottom: '1rem' }}>
           <p style={{ margin: 0 }}>
@@ -57,6 +57,7 @@ export default function FranquiasPage() {
           </p>
         </div>
       )}
+      {/* === Empresas === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Nova empresa (franqueadora)</h2>
         <form onSubmit={criar} className="actions-row">
@@ -74,6 +75,7 @@ export default function FranquiasPage() {
           ))}
         </ul>
       </div>
+      {/* === Rede === */}
       <div className="panel">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Rede / unidades</h2>
         {!visao?.rede?.length ? (

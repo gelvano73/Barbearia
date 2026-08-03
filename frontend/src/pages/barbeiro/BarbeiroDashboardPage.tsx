@@ -5,10 +5,11 @@ import { useEffect, useState } from 'react'
 import { barbeiroPortalApi } from '../../services/resources'
 
 export default function BarbeiroDashboardPage() {
+  /** === Estado === */
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
-  // Effect: carga inicial dos dados
+  /** === Carga de dados === */
   useEffect(() => {
     barbeiroPortalApi.dashboard()
       .then((res) => setData(res.data))
@@ -20,12 +21,14 @@ export default function BarbeiroDashboardPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Olá, {data.nome?.split(' ')[0]}</h1>
           <p>Seu painel pessoal do dia</p>
         </div>
       </div>
+      {/* === Indicadores === */}
       <div className="panel" style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
         <div>
           <div className="subtitle">Agenda hoje</div>
@@ -46,6 +49,7 @@ export default function BarbeiroDashboardPage() {
         </div>
       </div>
 
+      {/* === Meta === */}
       {data.meta && (
         <div className="panel" style={{ marginTop: '1rem' }}>
           <h2 style={{ marginTop: 0, fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}>Meta do mês</h2>
@@ -58,6 +62,7 @@ export default function BarbeiroDashboardPage() {
         </div>
       )}
 
+      {/* === Próximos horários === */}
       <div className="panel" style={{ marginTop: '1rem' }}>
         <h2 style={{ marginTop: 0, fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}>Próximos horários</h2>
         {data.proximosHorarios?.length ? (

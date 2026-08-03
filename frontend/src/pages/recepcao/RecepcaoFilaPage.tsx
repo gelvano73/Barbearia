@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../../components/Modal'
 import { recepcaoApi } from '../../services/resources'
 
+/** === Estado inicial === */
 const empty = {
   clienteId: '',
   barbeiroId: '',
@@ -13,6 +14,7 @@ const empty = {
   observacoes: '',
 }
 
+/** === Helpers === */
 function statusClass(status) {
   if (status === 'EM_ATENDIMENTO') return 'ok'
   if (['CANCELADO', 'DESISTIU', 'FINALIZADO'].includes(status)) return 'danger'
@@ -20,6 +22,7 @@ function statusClass(status) {
 }
 
 export default function RecepcaoFilaPage() {
+  /** === Estado === */
   const [fila, setFila] = useState([])
   const [clientes, setClientes] = useState([])
   const [barbeiros, setBarbeiros] = useState([])
@@ -28,7 +31,7 @@ export default function RecepcaoFilaPage() {
   const [form, setForm] = useState(empty)
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const [{ data: f }, { data: c }, { data: b }, { data: s }] = await Promise.all([
       recepcaoApi.fila(),
@@ -42,7 +45,6 @@ export default function RecepcaoFilaPage() {
     setServicos(s)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar a fila'))
     const t = setInterval(() => {
@@ -51,14 +53,13 @@ export default function RecepcaoFilaPage() {
     return () => clearInterval(t)
   }, [])
 
-  // Abre o modal para novo cadastro
+  /** === Ações === */
   const abrirNovo = () => {
     setForm(empty)
     setError('')
     setOpen(true)
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -77,7 +78,6 @@ export default function RecepcaoFilaPage() {
     }
   }
 
-  // Atualiza o status do cliente na fila
   const atualizar = async (id, status) => {
     try {
       await recepcaoApi.atualizarFila(id, status)
@@ -89,6 +89,7 @@ export default function RecepcaoFilaPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Fila de atendimento</h1>
@@ -101,6 +102,7 @@ export default function RecepcaoFilaPage() {
 
       {error && <div className="error" style={{ marginBottom: '1rem' }}>{error}</div>}
 
+      {/* === Lista da fila === */}
       <div className="panel">
         {fila.length === 0 ? (
           <div className="empty">Fila vazia no momento.</div>
@@ -167,6 +169,7 @@ export default function RecepcaoFilaPage() {
         )}
       </div>
 
+      {/* === Modal === */}
       <Modal open={open} title="Adicionar à fila" onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">

@@ -5,12 +5,13 @@ import { useEffect, useState } from 'react'
 import { barbeiroPortalApi } from '../../services/resources'
 
 export default function BarbeiroComissoesPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const now = new Date()
   const [ano, setAno] = useState(now.getFullYear())
   const [mes, setMes] = useState(now.getMonth() + 1)
 
-  // Effect: carga inicial dos dados
+  /** === Carga de dados === */
   useEffect(() => {
     barbeiroPortalApi.comissoes({ ano, mes }).then(({ data }) => setItens(data))
   }, [ano, mes])
@@ -19,6 +20,7 @@ export default function BarbeiroComissoesPage() {
 
   return (
     <>
+      {/* === Cabeçalho e filtros === */}
       <div className="page-header">
         <div>
           <h1>Comissões</h1>
@@ -35,6 +37,7 @@ export default function BarbeiroComissoesPage() {
           </label>
         </div>
       </div>
+      {/* === Lista === */}
       <div className="panel">
         <p style={{ color: 'var(--muted)' }}>Total do período: <strong>R$ {total.toFixed(2)}</strong></p>
         {itens.length === 0 ? (

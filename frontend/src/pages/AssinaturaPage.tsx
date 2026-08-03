@@ -3,11 +3,14 @@
  */
 import { useEffect, useState } from 'react'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
-import { PLANOS_PAGOS, TAXA_IMPLANTACAO_LABEL, TRIAL_INFO } from '../data/planos'
+import { PLANOS_PAGOS, TAXA_IMPLANTACAO_LABEL, TRIAL_INFO, temRecurso } from '../data/planos'
+import { useAuth } from '../context/AuthContext'
 import { assinaturaApi, backupApi } from '../services/resources'
 
 export default function AssinaturaPage() {
   /** === Estado === */
+  const { auth, updateAuth } = useAuth()
+  const podeBackup = temRecurso(auth?.plano as string | undefined, 'BACKUP')
   const [data, setData] = useState(null)
   const [backups, setBackups] = useState([])
   const [error, setError] = useState('')
@@ -22,6 +25,9 @@ export default function AssinaturaPage() {
     ])
     setData(assinatura.data)
     setBackups(listaBackup.data || [])
+    if (assinatura.data?.plano) {
+      updateAuth({ plano: assinatura.data.plano })
+    }
   }
 
   useEffect(() => {
@@ -76,9 +82,11 @@ export default function AssinaturaPage() {
           <h1>Assinatura</h1>
           <p>Planos Barba SaaS — escolha o pacote da sua barbearia</p>
         </div>
-        <button className="btn secondary" type="button" disabled={busy} onClick={executarBackup}>
-          Executar backup
-        </button>
+        {podeBackup && (
+          <button className="btn secondary" type="button" disabled={busy} onClick={executarBackup}>
+            Executar backup
+          </button>
+        )}
       </div>
 
       {error && <div className="error">{error}</div>}
@@ -114,6 +122,26 @@ export default function AssinaturaPage() {
             <p className="subtitle" style={{ margin: '0.75rem 0 0' }}>
               {TRIAL_INFO.descricao} Depois, escolha Basic, Pro ou Enterprise.
             </p>
+          )}
+          {data.limites && (
+            <div className="form-grid" style={{ marginTop: '1rem' }}>
+              <div>
+                <strong>Unidades</strong>
+                <div>{data.limites.unidadesUsadas ?? 0}{data.limites.maxUnidades != null ? ` / ${data.limites.maxUnidades}` : ' (ilimitado)'}</div>
+              </div>
+              <div>
+                <strong>Barbeiros</strong>
+                <div>{data.limites.barbeirosUsados ?? 0}{data.limites.maxBarbeiros != null ? ` / ${data.limites.maxBarbeiros}` : ' (ilimitado)'}</div>
+              </div>
+              <div>
+                <strong>Clientes</strong>
+                <div>{data.limites.clientesUsados ?? 0}{data.limites.maxClientes != null ? ` / ${data.limites.maxClientes}` : ' (ilimitado)'}</div>
+              </div>
+              <div>
+                <strong>Recepção</strong>
+                <div>{data.limites.atendentesUsados ?? 0}{data.limites.maxAtendentes != null ? ` / ${data.limites.maxAtendentes}` : ' (ilimitado)'}</div>
+              </div>
+            </div>
           )}
         </div>
       )}

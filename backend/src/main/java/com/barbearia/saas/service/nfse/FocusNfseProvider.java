@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Cliente Focus NFe (API v2 NFS-e).
+ * Implementação Focus NFe da API v2 de NFS-e (emissão e consulta por referência).
  * @see <a href="https://focusnfe.com.br/doc/#nfse_envio">Documentação Focus</a>
  */
 @Component
@@ -28,6 +28,8 @@ public class FocusNfseProvider implements NfseProvider {
     private final NfseProperties properties;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate = new RestTemplate();
+
+    /** === API pública === */
 
     @Override
     public EmissaoResultado emitir(String token, EmissaoRequest request) {
@@ -75,6 +77,8 @@ public class FocusNfseProvider implements NfseProvider {
             return new EmissaoResultado(false, "erro", null, null, null, null, e.getMessage(), null);
         }
     }
+
+    /** === Payload e parsing === */
 
     private Map<String, Object> montarPayload(EmissaoRequest request) {
         Map<String, Object> prestador = new LinkedHashMap<>();

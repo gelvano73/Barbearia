@@ -18,7 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/** CRUD de clientes da barbearia, incluindo upload de foto. */
+/**
+ * Cadastro e manutenção de clientes da barbearia (CRUD, foto e CPF
+ * válido para tomador de NFS-e).
+ */
 @Service
 @RequiredArgsConstructor
 public class ClienteService {
@@ -27,6 +30,9 @@ public class ClienteService {
     private final BarbeariaRepository barbeariaRepository;
     private final FotoStorageService fotoStorageService;
     private final EmailDominioService emailDominioService;
+    private final PlanoAcessoService planoAcessoService;
+
+    /** === Consultas === */
 
     @Transactional(readOnly = true)
     public List<ClienteResponse> listar(boolean apenasAtivos) {
@@ -42,9 +48,12 @@ public class ClienteService {
         return toResponse(encontrarNaBarbearia(id));
     }
 
+    /** === CRUD === */
+
     @Transactional
     public ClienteResponse criar(ClienteRequest request) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
+        planoAcessoService.exigirPodeCriarCliente();
         if (clienteRepository.existsByBarbeariaIdAndTelefoneAndAtivoTrue(barbeariaId, request.getTelefone())) {
             throw new NegocioException("Já existe cliente ativo com este telefone");
         }
@@ -104,6 +113,8 @@ public class ClienteService {
         cliente.setAtivo(false);
         clienteRepository.save(cliente);
     }
+
+    /** === Auxiliares === */
 
     private String normalizarCpfObrigatorio(String cpfRaw) {
         if (cpfRaw == null || cpfRaw.isBlank()) {

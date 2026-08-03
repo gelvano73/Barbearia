@@ -7,6 +7,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** DTO de resposta de uma NFS-e emitida ou em processamento. */
 @Data
 @Builder
 public class NotaFiscalResponse {

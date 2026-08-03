@@ -9,7 +9,7 @@ export default function FotoField({
   disabled = false,
   hint = 'JPEG, PNG ou WEBP · máx. 2MB',
 }) {
-  // Envia o arquivo selecionado e limpa o input para permitir reenvio
+  /** === Upload === */
   const onChange = async (e) => {
     const file = e.target.files?.[0]
     e.target.value = ''
@@ -19,6 +19,7 @@ export default function FotoField({
 
   return (
     <div className="foto-field">
+      {/* === Avatar === */}
       <div className="foto-avatar">
         {fotoUrl ? (
           <img src={fotoUrl} alt="Foto" />
@@ -26,6 +27,7 @@ export default function FotoField({
           <span className="foto-placeholder">Sem foto</span>
         )}
       </div>
+      {/* === Ações === */}
       <div className="foto-actions">
         <label className={`btn secondary small ${disabled ? 'is-disabled' : ''}`}>
           {fotoUrl ? 'Trocar foto' : 'Enviar foto'}

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../../components/Modal'
 import { portalApi } from '../../services/resources'
 
+/** === Helpers === */
 function formatDateTime(value) {
   return new Date(value).toLocaleString('pt-BR', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
@@ -12,30 +13,28 @@ function formatDateTime(value) {
 }
 
 export default function PortalAgendamentosPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [reagendarId, setReagendarId] = useState(null)
   const [novaData, setNovaData] = useState('')
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga e ações === */
   const carregar = async () => {
     const { data } = await portalApi.agendamentos()
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Falha ao carregar agendamentos'))
   }, [])
 
-  // Cancela o item selecionado
   const cancelar = async (id) => {
     if (!confirm('Cancelar este agendamento?')) return
     await portalApi.cancelar(id)
     await carregar()
   }
 
-  // Confirma o reagendamento com a nova data/hora
   const confirmarReagendar = async (e) => {
     e.preventDefault()
     setError('')
@@ -51,12 +50,14 @@ export default function PortalAgendamentosPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Meus horários</h1>
           <p>Cancele ou reagende quando precisar</p>
         </div>
       </div>
+      {/* === Lista === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhum agendamento.</div>
@@ -103,6 +104,7 @@ export default function PortalAgendamentosPage() {
         )}
       </div>
 
+      {/* === Modal reagendar === */}
       <Modal open={Boolean(reagendarId)} title="Reagendar" onClose={() => setReagendarId(null)}>
         <form onSubmit={confirmarReagendar}>
           <label>

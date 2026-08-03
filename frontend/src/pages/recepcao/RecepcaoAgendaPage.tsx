@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Modal from '../../components/Modal'
 import { recepcaoApi } from '../../services/resources'
 
+/** === Estado inicial === */
 const empty = {
   clienteId: '',
   barbeiroId: '',
@@ -15,6 +16,7 @@ const empty = {
   observacoes: '',
 }
 
+/** === Helpers === */
 function statusClass(status) {
   if (['CONCLUIDO', 'CONFIRMADO'].includes(status)) return 'ok'
   if (['CANCELADO', 'NAO_COMPARECEU'].includes(status)) return 'danger'
@@ -32,6 +34,7 @@ function formatDateTime(value) {
 }
 
 export default function RecepcaoAgendaPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [clientes, setClientes] = useState([])
   const [barbeiros, setBarbeiros] = useState([])
@@ -40,7 +43,7 @@ export default function RecepcaoAgendaPage() {
   const [filtroData, setFiltroData] = useState(() => new Date().toISOString().slice(0, 10))
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const params = {}
     if (filtroData) params.data = filtroData
@@ -54,21 +57,19 @@ export default function RecepcaoAgendaPage() {
     setBarbeiros(brs)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar a agenda'))
   }, [filtroData])
 
   const podeAgendar = useMemo(() => clientes.length > 0 && barbeiros.length > 0, [clientes, barbeiros])
 
-  // Abre o modal para novo cadastro
+  /** === Ações === */
   const abrirNovo = () => {
     setForm(empty)
     setError('')
     setOpen(true)
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -88,7 +89,6 @@ export default function RecepcaoAgendaPage() {
     }
   }
 
-  // Atualiza o status do agendamento
   const atualizarStatus = async (id, status) => {
     await recepcaoApi.atualizarStatusAgendamento(id, status)
     await carregar()
@@ -96,6 +96,7 @@ export default function RecepcaoAgendaPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Agendamento manual</h1>
@@ -106,6 +107,7 @@ export default function RecepcaoAgendaPage() {
         </button>
       </div>
 
+      {/* === Filtro === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         <label>
           Data
@@ -119,6 +121,7 @@ export default function RecepcaoAgendaPage() {
         </div>
       )}
 
+      {/* === Lista === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhum agendamento nesta data.</div>
@@ -182,6 +185,7 @@ export default function RecepcaoAgendaPage() {
         )}
       </div>
 
+      {/* === Modal === */}
       <Modal open={open} title="Novo agendamento" onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">

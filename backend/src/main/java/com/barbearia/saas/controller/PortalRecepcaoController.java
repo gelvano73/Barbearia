@@ -36,6 +36,8 @@ public class PortalRecepcaoController {
 
     private final PortalRecepcaoService portalRecepcaoService;
 
+    /** === Clientes e agendamentos === */
+
     /** Listar clientes. */
     @GetMapping("/clientes")
     @Operation(summary = "Listar clientes")
@@ -95,6 +97,8 @@ public class PortalRecepcaoController {
         return ResponseEntity.ok(portalRecepcaoService.atualizarStatusAgendamento(id, request.getStatus()));
     }
 
+    /** === Fila === */
+
     /** Listar fila de atendimento. */
     @GetMapping("/fila")
     @Operation(summary = "Listar fila de atendimento")
@@ -116,6 +120,8 @@ public class PortalRecepcaoController {
             @PathVariable Long id, @Valid @RequestBody AtualizarFilaStatusRequest request) {
         return ResponseEntity.ok(portalRecepcaoService.atualizarStatusFila(id, request.getStatus()));
     }
+
+    /** === Caixa === */
 
     /** Retorna o caixa aberto (ou atual) da unidade. */
     @GetMapping("/caixa")
@@ -151,6 +157,8 @@ public class PortalRecepcaoController {
     public ResponseEntity<CaixaResponse> suprimento(@Valid @RequestBody MovimentoCaixaRequest request) {
         return ResponseEntity.ok(portalRecepcaoService.suprimento(request));
     }
+
+    /** === Pagamentos === */
 
     /** Listar pagamentos do dia. */
     @GetMapping("/pagamentos")

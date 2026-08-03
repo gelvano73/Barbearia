@@ -9,11 +9,13 @@ import FotoField from '../components/FotoField'
 import { barbeirosApi } from '../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
+/** === Estado inicial === */
 const empty = { nome: '', telefone: '', especialidade: '' }
 const emptyConta = { email: '', senha: '' }
 const emptyMeta = { ano: new Date().getFullYear(), mes: new Date().getMonth() + 1, metaAtendimentos: 40, metaComissao: 2000 }
 
 export default function BarbeirosPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [open, setOpen] = useState(false)
   const [contaOpen, setContaOpen] = useState(false)
@@ -27,18 +29,17 @@ export default function BarbeirosPage() {
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     const { data } = await barbeirosApi.listar(true)
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Não foi possível carregar barbeiros'))
   }, [])
 
-  // Abre o modal para novo cadastro
+  /** === CRUD de barbeiros === */
   const abrirNovo = () => {
     setEditing(null)
     setForm(empty)
@@ -47,7 +48,6 @@ export default function BarbeirosPage() {
     setOpen(true)
   }
 
-  // Abre o modal preenchido para edição
   const abrirEdicao = (item) => {
     setEditing(item)
     setForm({
@@ -60,7 +60,6 @@ export default function BarbeirosPage() {
     setOpen(true)
   }
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -77,7 +76,6 @@ export default function BarbeirosPage() {
     }
   }
 
-  // Envia a foto do cadastro
   const enviarFoto = async (file) => {
     if (!editing?.id) return
     setError('')
@@ -91,14 +89,13 @@ export default function BarbeirosPage() {
     }
   }
 
-  // Desativa o registro selecionado
   const desativar = async (id) => {
     if (!confirm('Desativar este barbeiro?')) return
     await barbeirosApi.desativar(id)
     await carregar()
   }
 
-  // Cria conta de acesso para o barbeiro
+  /** === Conta e meta === */
   const criarConta = async (e) => {
     e.preventDefault()
     setError('')
@@ -117,7 +114,6 @@ export default function BarbeirosPage() {
     }
   }
 
-  // Define a meta do barbeiro
   const salvarMeta = async (e) => {
     e.preventDefault()
     setError('')
@@ -139,6 +135,7 @@ export default function BarbeirosPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Barbeiros</h1>
@@ -151,6 +148,7 @@ export default function BarbeirosPage() {
 
       {ok && <div className="panel" style={{ marginBottom: '1rem', color: 'var(--ok)' }}>{ok}</div>}
 
+      {/* === Tabela da equipe === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhum barbeiro cadastrado.</div>
@@ -221,6 +219,7 @@ export default function BarbeirosPage() {
         )}
       </div>
 
+      {/* === Modal cadastro === */}
       <Modal open={open} title={editing ? 'Editar barbeiro' : 'Novo barbeiro'} onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">
@@ -252,6 +251,7 @@ export default function BarbeirosPage() {
         </form>
       </Modal>
 
+      {/* === Modal conta === */}
       <Modal open={contaOpen} title={`Conta — ${selected?.nome || ''}`} onClose={() => setContaOpen(false)}>
         <form onSubmit={criarConta}>
           <div className="form-grid">
@@ -272,6 +272,7 @@ export default function BarbeirosPage() {
         </form>
       </Modal>
 
+      {/* === Modal meta === */}
       <Modal open={metaOpen} title={`Meta — ${selected?.nome || ''}`} onClose={() => setMetaOpen(false)}>
         <form onSubmit={salvarMeta}>
           <div className="form-grid">

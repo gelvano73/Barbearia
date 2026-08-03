@@ -6,6 +6,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import AppShell from './AppShell'
 
+/** === Helpers === */
 const linkClass = ({ isActive }: { isActive: boolean }) => (isActive ? 'active' : undefined)
 
 export default function RecepcaoLayout() {
@@ -17,6 +18,7 @@ export default function RecepcaoLayout() {
       brandSubtitle="RECEPÇÃO"
       nav={
         <>
+          {/* === Navegação principal === */}
           <NavLink to="/recepcao" end className={linkClass}>Início</NavLink>
           <NavLink to="/recepcao/clientes" className={linkClass}>Clientes</NavLink>
           <NavLink to="/recepcao/agenda" className={linkClass}>Agenda</NavLink>
@@ -27,6 +29,7 @@ export default function RecepcaoLayout() {
       }
       footer={
         <>
+          {/* === Rodapé da sidebar === */}
           <div>
             <strong>{auth?.nome}</strong>
             <div>{auth?.nomeBarbearia}</div>

@@ -10,7 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/** Endpoints de autenticação, registro, OAuth e recuperação de senha. */
+/**
+ * Endpoints REST de autenticação: registro, login por papel, OTP,
+ * recuperação de senha, OAuth (dev) e listagem de barbearias.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    /** === Registro e login === */
 
     /** Registra uma nova barbearia com usuário administrador. */
     @PostMapping("/registro")
@@ -61,6 +66,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.loginRecepcao(request));
     }
 
+    /** === OTP === */
+
     /** Envia código OTP para telefone cadastrado. */
     @PostMapping("/otp/enviar")
     @Operation(summary = "Enviar código OTP para telefone cadastrado")
@@ -75,6 +82,8 @@ public class AuthController {
         return ResponseEntity.ok(authService.verificarOtp(request));
     }
 
+    /** === Contas === */
+
     /** Cria um usuário com perfil de atendente. */
     @PostMapping("/recepcao/atendente")
     @Operation(summary = "Criar conta de recepcionista (admin)")
@@ -82,6 +91,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> criarAtendente(@Valid @RequestBody CriarAtendenteRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.criarAtendente(request));
     }
+
+    /** === Recuperação de senha === */
 
     /** Inicia o fluxo de recuperação de senha. */
     @PostMapping("/recuperar-senha")
@@ -97,6 +108,8 @@ public class AuthController {
         authService.redefinirSenha(request);
         return ResponseEntity.noContent().build();
     }
+
+    /** === OAuth e barbearias === */
 
     /** Login social (modo desenvolvimento). */
     @PostMapping("/oauth/{provider}")

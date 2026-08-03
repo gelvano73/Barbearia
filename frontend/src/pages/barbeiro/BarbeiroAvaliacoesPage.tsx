@@ -5,21 +5,24 @@ import { useEffect, useState } from 'react'
 import { barbeiroPortalApi } from '../../services/resources'
 
 export default function BarbeiroAvaliacoesPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
 
-  // Effect: carga inicial dos dados
+  /** === Carga de dados === */
   useEffect(() => {
     barbeiroPortalApi.avaliacoes().then(({ data }) => setItens(data))
   }, [])
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Avaliações</h1>
           <p>Feedback recebido dos clientes</p>
         </div>
       </div>
+      {/* === Lista === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhuma avaliação ainda.</div>

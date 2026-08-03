@@ -22,6 +22,9 @@ public class UnidadeService {
 
     private final UnidadeRepository unidadeRepository;
     private final BarbeariaRepository barbeariaRepository;
+    private final PlanoAcessoService planoAcessoService;
+
+    /** === Consultas === */
 
     /** Lista os registros solicitados. */
     @Transactional(readOnly = true)
@@ -39,10 +42,13 @@ public class UnidadeService {
         return toResponse(encontrarNaBarbearia(id));
     }
 
+    /** === CRUD === */
+
     /** Cria um novo registro. */
     @Transactional
     public UnidadeResponse criar(UnidadeRequest request) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
+        planoAcessoService.exigirPodeCriarUnidade();
         String nome = request.getNome().trim();
         if (unidadeRepository.existsByBarbeariaIdAndNomeIgnoreCaseAndAtivoTrue(barbeariaId, nome)) {
             throw new NegocioException("Já existe unidade ativa com este nome");
@@ -99,6 +105,8 @@ public class UnidadeService {
         unidadeRepository.save(unidade);
     }
 
+    /** === Unidade padrão === */
+
     /** Cria a unidade padrão da barbearia. */
     @Transactional
     public Unidade criarPadrao(Barbearia barbearia) {
@@ -123,6 +131,8 @@ public class UnidadeService {
                     return criarPadrao(barbearia);
                 });
     }
+
+    /** === Auxiliares === */
 
     private void limparPadrao(Long barbeariaId) {
         unidadeRepository.findFirstByBarbeariaIdAndPadraoTrueAndAtivoTrue(barbeariaId)

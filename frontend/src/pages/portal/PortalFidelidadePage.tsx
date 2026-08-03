@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { portalApi } from '../../services/resources'
 
+/** === Helpers === */
 function formatDateTime(value) {
   return new Date(value).toLocaleString('pt-BR', {
     day: '2-digit',
@@ -15,10 +16,11 @@ function formatDateTime(value) {
 }
 
 export default function PortalFidelidadePage() {
+  /** === Estado === */
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
-  // Effect: carga inicial dos dados
+  /** === Carga de dados === */
   useEffect(() => {
     portalApi.fidelidade()
       .then(({ data: d }) => setData(d))
@@ -38,6 +40,7 @@ export default function PortalFidelidadePage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Fidelidade</h1>
@@ -45,6 +48,7 @@ export default function PortalFidelidadePage() {
         </div>
       </div>
 
+      {/* === Saldo === */}
       <div className="panel confirm-box" style={{ marginBottom: '1rem' }}>
         <strong>{saldo?.pontos ?? 0} pontos</strong>
         <p>
@@ -57,6 +61,7 @@ export default function PortalFidelidadePage() {
         </p>
       </div>
 
+      {/* === Histórico === */}
       <div className="panel">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Histórico</h2>
         {!historico?.length ? (

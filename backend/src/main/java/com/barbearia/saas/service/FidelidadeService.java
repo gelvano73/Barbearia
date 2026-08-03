@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.domain.entity.*;
 import com.barbearia.saas.domain.enums.TipoFidelidadeMovimento;
 import com.barbearia.saas.domain.repository.*;
@@ -18,11 +20,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FidelidadeService {
 
+    private final PlanoAcessoService planoAcessoService;
+
     private final FidelidadeConfigRepository configRepository;
     private final FidelidadeSaldoRepository saldoRepository;
     private final FidelidadeMovimentoRepository movimentoRepository;
     private final ClienteRepository clienteRepository;
     private final BarbeariaRepository barbeariaRepository;
+
+    /** === Configuração === */
 
     /** Retorna a configuração do programa de fidelidade. */
     @Transactional(readOnly = true)
@@ -33,6 +39,7 @@ public class FidelidadeService {
     /** Atualiza a configuração do programa de fidelidade. */
     @Transactional
     public FidelidadeConfigResponse atualizarConfig(FidelidadeConfigRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.FIDELIDADE);
         FidelidadeConfig config = obterOuCriarConfig();
         config.setPontosPorAtendimento(request.getPontosPorAtendimento());
         config.setPontosParaResgate(request.getPontosParaResgate());
@@ -40,6 +47,8 @@ public class FidelidadeService {
         config.setAtivo(request.getAtivo());
         return toConfigResponse(configRepository.save(config));
     }
+
+    /** === Saldos e painel === */
 
     /** Lista saldos. */
     @Transactional(readOnly = true)
@@ -70,10 +79,10 @@ public class FidelidadeService {
     /** Retorna o painel de fidelidade do cliente autenticado. */
     @Transactional(readOnly = true)
     public FidelidadeMeuPainelResponse meuPainel(Long clienteId) {
-        // usa barbearia do cliente (chamado no contexto do portal)
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
         Long barbeariaId = cliente.getBarbearia().getId();
+        planoAcessoService.exigirRecurso(barbeariaId, PlanoRecurso.FIDELIDADE);
         FidelidadeConfig config = configRepository.findByBarbeariaId(barbeariaId)
                 .orElseGet(() -> criarConfigPadrao(cliente.getBarbearia()));
         FidelidadeSaldo saldo = saldoRepository.findByClienteId(clienteId)
@@ -102,9 +111,12 @@ public class FidelidadeService {
                 .toList();
     }
 
+    /** === Resgates e créditos === */
+
     /** Resgata pontos de fidelidade. */
     @Transactional
     public FidelidadeSaldoResponse resgatar(FidelidadeResgateRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.FIDELIDADE);
         FidelidadeConfig config = obterOuCriarConfig();
         if (!Boolean.TRUE.equals(config.getAtivo())) {
             throw new NegocioException("Programa de fidelidade inativo");
@@ -132,7 +144,10 @@ public class FidelidadeService {
     /** Credita pontos ao concluir atendimento (idempotente por agendamento). */
     @Transactional
     public void creditarPorAgendamento(Agendamento agendamento) {
-        if (agendamento == null || agendamento.getCliente() == null) {
+        if (agendamento == null || agendamento.getCliente() == null || agendamento.getBarbearia() == null) {
+            return;
+        }
+        if (!planoAcessoService.temRecurso(agendamento.getBarbearia().getId(), PlanoRecurso.FIDELIDADE)) {
             return;
         }
         if (agendamento.getId() != null
@@ -171,6 +186,8 @@ public class FidelidadeService {
                 "Pontos por " + servico,
                 agendamento);
     }
+
+    /** === Auxiliares === */
 
     private FidelidadeConfig obterOuCriarConfig() {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();

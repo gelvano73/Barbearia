@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { portalApi } from '../../services/resources'
 
+/** === Helpers === */
 function hojeISO() {
   const d = new Date()
   const pad = (n) => String(n).padStart(2, '0')
@@ -12,6 +13,7 @@ function hojeISO() {
 }
 
 export default function PortalAgendarPage() {
+  /** === Estado === */
   const navigate = useNavigate()
   const [barbeiros, setBarbeiros] = useState([])
   const [servicos, setServicos] = useState([])
@@ -20,7 +22,7 @@ export default function PortalAgendarPage() {
   const [error, setError] = useState('')
   const [loadingSlots, setLoadingSlots] = useState(false)
 
-  // Effect: carga inicial dos dados
+  /** === Carga e formulário === */
   useEffect(() => {
     Promise.all([portalApi.barbeiros(), portalApi.servicos()])
       .then(([b, s]) => {
@@ -35,7 +37,6 @@ export default function PortalAgendarPage() {
     [servicos, form.servicoId],
   )
 
-  // Carrega slots disponíveis
   const carregarSlots = async (next = form) => {
     if (!next.barbeiroId || !next.servicoId || !next.data) {
       setSlots([])
@@ -61,7 +62,6 @@ export default function PortalAgendarPage() {
     }
   }
 
-  // Atualiza o formulário e recarrega slots se necessário
   const atualizarForm = (patch) => {
     const next = { ...form, ...patch }
     if ('barbeiroId' in patch || 'servicoId' in patch || 'data' in patch) {
@@ -72,7 +72,6 @@ export default function PortalAgendarPage() {
     carregarSlots(next)
   }
 
-  // Submete o formulário
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -95,12 +94,14 @@ export default function PortalAgendarPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Agendar</h1>
           <p>Escolha serviço, barbeiro e um horário livre</p>
         </div>
       </div>
+      {/* === Formulário de agendamento === */}
       <div className="panel">
         <form onSubmit={onSubmit}>
           <div className="form-grid">

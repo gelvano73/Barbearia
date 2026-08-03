@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.domain.entity.*;
 import com.barbearia.saas.domain.enums.MetodoCheckin;
 import com.barbearia.saas.domain.repository.*;
@@ -31,6 +33,8 @@ public class CheckinFacialService {
 
     private static final Set<String> TIPOS = Set.of("image/jpeg", "image/png", "image/webp");
 
+    private final PlanoAcessoService planoAcessoService;
+
     private final FacePerfilRepository facePerfilRepository;
     private final CheckinRepository checkinRepository;
     private final ClienteRepository clienteRepository;
@@ -40,9 +44,12 @@ public class CheckinFacialService {
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
+    /** === Cadastro facial === */
+
     /** Cadastra o perfil facial do cliente. */
     @Transactional
     public CheckinResponse registrarFace(Long clienteId, MultipartFile file) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.CHECKIN);
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
         Cliente cliente = clienteRepository.findByIdAndBarbeariaId(clienteId, barbeariaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
@@ -73,9 +80,12 @@ public class CheckinFacialService {
                 .build();
     }
 
+    /** === Check-in === */
+
     /** Realiza check-in por reconhecimento facial. */
     @Transactional
     public CheckinResponse checkinFacial(MultipartFile file) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.CHECKIN);
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
         validarImagem(file);
         String assinatura = assinaturaImagem(file);
@@ -115,6 +125,7 @@ public class CheckinFacialService {
     /** Realiza check-in manual do cliente na unidade. */
     @Transactional
     public CheckinResponse checkinManual(Long clienteId) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.CHECKIN);
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
         Cliente cliente = clienteRepository.findByIdAndBarbeariaId(clienteId, barbeariaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
@@ -143,6 +154,8 @@ public class CheckinFacialService {
                 .map(c -> toResponse(c, null))
                 .toList();
     }
+
+    /** === Auxiliares === */
 
     private CheckinResponse toResponse(Checkin c, String mensagem) {
         return CheckinResponse.builder()

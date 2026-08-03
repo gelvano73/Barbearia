@@ -3,6 +3,7 @@
  */
 import { Link } from 'react-router-dom'
 
+/** === Tipos === */
 type AceitePrivacidadeProps = {
   checked: boolean
   onChange: (checked: boolean) => void
@@ -12,6 +13,7 @@ type AceitePrivacidadeProps = {
 export default function AceitePrivacidade({ checked, onChange, id = 'aceite-privacidade' }: AceitePrivacidadeProps) {
   return (
     <label className="aceite-privacidade" htmlFor={id}>
+      {/* === Checkbox === */}
       <input
         id={id}
         type="checkbox"
@@ -19,6 +21,7 @@ export default function AceitePrivacidade({ checked, onChange, id = 'aceite-priv
         onChange={(e) => onChange(e.target.checked)}
         required
       />
+      {/* === Texto e link === */}
       <span>
         Li e aceito a{' '}
         <Link to="/privacidade" target="_blank" rel="noopener noreferrer">

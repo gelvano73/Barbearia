@@ -4,6 +4,7 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
+/** === Constantes === */
 const atalhos = [
   { to: '/recepcao/clientes', titulo: 'Clientes', desc: 'Cadastro' },
   { to: '/recepcao/agenda', titulo: 'Agenda', desc: 'Manual' },
@@ -17,6 +18,7 @@ export default function RecepcaoHomePage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Recepção</h1>
@@ -26,6 +28,7 @@ export default function RecepcaoHomePage() {
         </div>
       </div>
 
+      {/* === Atalhos === */}
       <div
         className="panel"
         style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}

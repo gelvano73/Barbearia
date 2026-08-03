@@ -1,14 +1,17 @@
 /**
  * Cadastro e edição rápida de clientes pela recepção.
+ * Inclui filtro local e validação de CPF/e-mail para NFS-e.
  */
 import { useEffect, useState } from 'react'
 import Modal from '../../components/Modal'
 import { recepcaoApi } from '../../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../../utils/email'
 
+/** === Estado inicial === */
 const empty = { nome: '', telefone: '', email: '', cpf: '', observacoes: '' }
 
 export default function RecepcaoClientesPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -16,6 +19,7 @@ export default function RecepcaoClientesPage() {
   const [error, setError] = useState('')
   const [filtro, setFiltro] = useState('')
 
+  /** === Carga e filtro === */
   const carregar = async () => {
     const { data } = await recepcaoApi.clientes()
     setItens(data)
@@ -36,6 +40,7 @@ export default function RecepcaoClientesPage() {
     )
   })
 
+  /** === Ações CRUD === */
   const abrirNovo = () => {
     setEditing(null)
     setForm(empty)
@@ -82,6 +87,7 @@ export default function RecepcaoClientesPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Clientes</h1>
@@ -92,6 +98,7 @@ export default function RecepcaoClientesPage() {
         </button>
       </div>
 
+      {/* === Lista e filtro === */}
       <div className="panel">
         <input
           placeholder="Nome, telefone, CPF ou email"
@@ -132,6 +139,7 @@ export default function RecepcaoClientesPage() {
         )}
       </div>
 
+      {/* === Modal cadastro === */}
       <Modal open={open} title={editing ? 'Editar cliente' : 'Novo cliente'} onClose={() => setOpen(false)}>
         <form onSubmit={salvar}>
           <div className="form-grid">

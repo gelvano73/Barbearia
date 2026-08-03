@@ -28,7 +28,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-/** Configuração de segurança Spring Security: CORS, CSRF, rotas públicas e JWT. */
+/**
+ * Configuração Spring Security: CORS, CSRF desabilitado (API stateless),
+ * rotas públicas/privadas por papel e cadeia de filtros (headers, rate limit, JWT, assinatura).
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -43,6 +46,8 @@ public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
+
+    /** === Filter chain === */
 
     /** Monta o SecurityFilterChain com JWT e rotas públicas. */
     @Bean
@@ -80,6 +85,8 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /** === Beans de autenticação === */
+
     /** Expõe o AuthenticationProvider baseado em UserDetails e encoder. */
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -99,6 +106,8 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    /** === CORS === */
 
     /** Configura CORS (origens, métodos e headers). */
     @Bean

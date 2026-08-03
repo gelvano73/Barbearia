@@ -3,6 +3,7 @@ package com.barbearia.saas.service;
 import com.barbearia.saas.config.AiProperties;
 import com.barbearia.saas.config.WhatsAppProperties;
 import com.barbearia.saas.domain.entity.*;
+import com.barbearia.saas.domain.enums.PlanoRecurso;
 import com.barbearia.saas.domain.enums.Role;
 import com.barbearia.saas.domain.repository.*;
 import com.barbearia.saas.dto.ia.IaChatRequest;
@@ -42,6 +43,9 @@ public class WhatsAppAtendimentoService {
     private final BarbeariaRepository barbeariaRepository;
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
+    private final PlanoAcessoService planoAcessoService;
+
+    /** === Mensagens === */
 
     /** Processa mensagem texto. */
     @Transactional
@@ -61,6 +65,12 @@ public class WhatsAppAtendimentoService {
                 .filter(b -> Boolean.TRUE.equals(b.getAtivo()))
                 .orElseThrow(() -> new RecursoNaoEncontradoException(
                         "Barbearia padrão do WhatsApp não encontrada (id=" + barbeariaId + ")"));
+
+        if (!planoAcessoService.temRecurso(barbeariaId, PlanoRecurso.WHATSAPP)) {
+            cloudApiClient.enviarTexto(telefoneRaw,
+                    "Atendimento por WhatsApp não está disponível no plano atual da barbearia.");
+            return Map.of("status", "plano_sem_whatsapp");
+        }
 
         Cliente cliente = resolverOuCriarCliente(barbearia, telefone);
         WhatsappSessao sessao = sessaoRepository.findByBarbeariaIdAndTelefone(barbeariaId, telefone)
@@ -102,6 +112,8 @@ public class WhatsAppAtendimentoService {
         }
         return out;
     }
+
+    /** === Webhook === */
 
     /** Processa webhook payload. */
     @Transactional
@@ -165,6 +177,8 @@ public class WhatsAppAtendimentoService {
         return m;
     }
 
+    /** === Sessão e clientes === */
+
     private Cliente resolverOuCriarCliente(Barbearia barbearia, String telefone) {
         Optional<Cliente> existente = clienteRepository
                 .findFirstByBarbeariaIdAndTelefoneAndAtivoTrue(barbearia.getId(), telefone);
@@ -221,6 +235,8 @@ public class WhatsAppAtendimentoService {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
+    /** === Contexto === */
+
     private IaContexto lerContexto(WhatsappSessao sessao) {
         if (sessao.getContextoJson() == null || sessao.getContextoJson().isBlank()) {
             return new IaContexto();
@@ -239,6 +255,8 @@ public class WhatsAppAtendimentoService {
             return "{}";
         }
     }
+
+    /** === Auxiliares === */
 
     private String formatarRespostaWhatsApp(IaChatResponse r) {
         StringBuilder sb = new StringBuilder(r.getResposta() != null ? r.getResposta() : "");

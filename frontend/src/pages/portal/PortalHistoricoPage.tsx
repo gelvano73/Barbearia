@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import Modal from '../../components/Modal'
 import { portalApi } from '../../services/resources'
 
+/** === Helpers === */
 function formatDateTime(value) {
   return new Date(value).toLocaleString('pt-BR', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
@@ -13,24 +14,23 @@ function formatDateTime(value) {
 }
 
 export default function PortalHistoricoPage() {
+  /** === Estado === */
   const [itens, setItens] = useState([])
   const [avaliarItem, setAvaliarItem] = useState(null)
   const [nota, setNota] = useState(5)
   const [comentario, setComentario] = useState('')
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga e ações === */
   const carregar = async () => {
     const { data } = await portalApi.historico()
     setItens(data)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Falha ao carregar histórico'))
   }, [])
 
-  // Envia a avaliação do atendimento
   const enviarAvaliacao = async (e) => {
     e.preventDefault()
     setError('')
@@ -49,12 +49,14 @@ export default function PortalHistoricoPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Histórico</h1>
           <p>Serviços concluídos e avaliações</p>
         </div>
       </div>
+      {/* === Lista === */}
       <div className="panel">
         {itens.length === 0 ? (
           <div className="empty">Nenhum serviço concluído ainda.</div>
@@ -97,6 +99,7 @@ export default function PortalHistoricoPage() {
         )}
       </div>
 
+      {/* === Modal avaliar === */}
       <Modal open={Boolean(avaliarItem)} title="Avaliar barbeiro" onClose={() => setAvaliarItem(null)}>
         <form onSubmit={enviarAvaliacao}>
           <label>

@@ -1,5 +1,7 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.config.NfseProperties;
 import com.barbearia.saas.domain.entity.Barbearia;
 import com.barbearia.saas.domain.enums.RegimeTributario;
@@ -16,14 +18,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
-/** Configuração fiscal (CNPJ/IM/município) da barbearia para NFS-e. */
+/**
+ * Configuração fiscal da barbearia (CNPJ, IM, município, regime, token Focus)
+ * e avaliação de prontidão para emitir NFS-e.
+ */
 @Service
 @RequiredArgsConstructor
 public class ConfigFiscalService {
 
+    private final PlanoAcessoService planoAcessoService;
+
     private final BarbeariaRepository barbeariaRepository;
     private final NfseProperties nfseProperties;
     private final EmailDominioService emailDominioService;
+
+    /** === Configuração === */
 
     @Transactional(readOnly = true)
     public ConfigFiscalResponse obter() {
@@ -32,6 +41,7 @@ public class ConfigFiscalService {
 
     @Transactional
     public ConfigFiscalResponse salvar(ConfigFiscalRequest request) {
+        planoAcessoService.exigirRecurso(PlanoRecurso.NFSE);
         Barbearia b = barbeariaAtual();
 
         if (request.getCnpj() != null && !request.getCnpj().isBlank()) {
@@ -104,6 +114,8 @@ public class ConfigFiscalService {
         return toResponse(barbeariaRepository.save(b));
     }
 
+    /** === Validação e token === */
+
     private void validarMinimoParaHabilitar(Barbearia b) {
         if (b.getCnpj() == null || !CnpjUtil.isValido(b.getCnpj())) {
             throw new NegocioException("Informe um CNPJ válido (Receita Federal) para habilitar a NFS-e");
@@ -129,6 +141,8 @@ public class ConfigFiscalService {
         }
         return nfseProperties.getToken() != null ? nfseProperties.getToken().trim() : "";
     }
+
+    /** === Auxiliares === */
 
     private Barbearia barbeariaAtual() {
         return barbeariaRepository.findById(SecurityUtils.getBarbeariaIdAtual())

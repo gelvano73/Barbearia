@@ -51,6 +51,8 @@ public class IaAtendimentoService {
     private final ServicoRepository servicoRepository;
     private final OpenAiClient openAiClient;
 
+    /** === Chat === */
+
     /** Processa mensagem no chat de atendimento por IA. */
     @Transactional
     public IaChatResponse chat(IaChatRequest request) {
@@ -112,6 +114,8 @@ public class IaAtendimentoService {
                 ctx,
                 List.of("Sugerir serviços", "Horários disponíveis", "Quero agendar", "Ver barbeiros"));
     }
+
+    /** === Intenções === */
 
     private boolean isIntencaoAgendar(String msg, String original) {
         if (msg.startsWith("agendar") || msg.startsWith("marcar") || msg.startsWith("reserv")) {
@@ -242,6 +246,8 @@ public class IaAtendimentoService {
                 .acoesRapidas(acoes)
                 .build();
     }
+
+    /** === Fluxo de agendamento === */
 
     private IaChatResponse fluxoAgendar(String msg, IaContexto ctx) {
         enriquecerContexto(msg, ctx);
@@ -402,6 +408,8 @@ public class IaAtendimentoService {
         }
         return resposta(sb.toString().trim(), "MEUS_HORARIOS", ctx, List.of("Quero agendar", "Sugerir serviços"));
     }
+
+    /** === Contexto e busca === */
 
     private void enriquecerContexto(String msg, IaContexto ctx) {
         portalClienteService.listarServicos().stream()
@@ -564,6 +572,8 @@ public class IaAtendimentoService {
         return ranked.stream().limit(4).toList();
     }
 
+    /** === Resolução === */
+
     private Optional<Servico> acharServicoPorKeyword(String keyword) {
         Long barbeariaId = SecurityUtils.getBarbeariaIdAtual();
         return servicoRepository.findByBarbeariaIdAndAtivoTrueOrderByNomeAsc(barbeariaId).stream()
@@ -642,6 +652,8 @@ public class IaAtendimentoService {
         }
         return Optional.empty();
     }
+
+    /** === Auxiliares === */
 
     private boolean podeAgendar(IaContexto ctx) {
         return ctx.getBarbeiroId() != null && ctx.getDataHora() != null;

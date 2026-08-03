@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
 
 /** Consulta e controle da assinatura SaaS (plano, status e vencimento) da barbearia. */
 @Service
@@ -25,6 +26,7 @@ public class AssinaturaService {
 
     private final BarbeariaRepository barbeariaRepository;
     private final MercadoPagoClient mercadoPagoClient;
+    private final PlanoAcessoService planoAcessoService;
 
     /** === Consultas === */
 
@@ -33,7 +35,14 @@ public class AssinaturaService {
     public AssinaturaResponse getStatus() {
         Barbearia barbearia = barbeariaRepository.findById(SecurityUtils.getBarbeariaIdAtual())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Barbearia não encontrada"));
-        return toResponse(barbearia);
+        AssinaturaResponse response = toResponse(barbearia);
+        Map<String, Object> acesso = planoAcessoService.resumoAcesso();
+        @SuppressWarnings("unchecked")
+        Set<String> recursos = (Set<String>) acesso.remove("recursos");
+        acesso.remove("plano");
+        response.setLimites(acesso);
+        response.setRecursos(recursos);
+        return response;
     }
 
     /** === Upgrade e pagamento === */

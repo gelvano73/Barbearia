@@ -5,10 +5,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+/** === Constantes === */
 const ATUALIZADO_EM = '2 de agosto de 2026 (NFS-e)'
 const STORAGE_KEY = 'barba_aceite_privacidade'
 
 export default function PrivacidadePage() {
+  /** === Estado === */
   const [aceito, setAceito] = useState(false)
   const [marcado, setMarcado] = useState(false)
   const [msg, setMsg] = useState('')
@@ -25,7 +27,7 @@ export default function PrivacidadePage() {
     }
   }, [])
 
-  // Registra o aceite local do visitante nesta política
+  /** === Aceite local === */
   const confirmarAceite = () => {
     if (!marcado) {
       setMsg('Marque a opção para confirmar o aceite.')
@@ -47,6 +49,7 @@ export default function PrivacidadePage() {
   return (
     <div className="legal-page">
       <div className="legal-doc">
+        {/* === Cabeçalho === */}
         <p className="legal-brand">BARBA SAAS</p>
         <h1>Política de Privacidade</h1>
         <p className="legal-meta">Última atualização: {ATUALIZADO_EM}</p>
@@ -58,6 +61,7 @@ export default function PrivacidadePage() {
           normas aplicáveis no Brasil.
         </p>
 
+        {/* === 1. Papéis === */}
         <section>
           <h2>1. Quem somos e papéis no tratamento</h2>
           <p>
@@ -83,6 +87,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 2. Dados coletados === */}
         <section>
           <h2>2. Quais dados coletamos</h2>
           <p>Conforme o uso da Plataforma, podemos tratar as seguintes categorias:</p>
@@ -174,6 +179,7 @@ export default function PrivacidadePage() {
           </ul>
         </section>
 
+        {/* === 2A. Segurança === */}
         <section>
           <h2>2A. Segurança da informação</h2>
           <p>Adotamos medidas técnicas e organizacionais proporcionais, incluindo:</p>
@@ -191,6 +197,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 3. Finalidades === */}
         <section>
           <h2>3. Finalidades do tratamento</h2>
           <p>Os dados são tratados para:</p>
@@ -206,6 +213,7 @@ export default function PrivacidadePage() {
           </ul>
         </section>
 
+        {/* === 4. Bases legais === */}
         <section>
           <h2>4. Bases legais (LGPD)</h2>
           <p>Conforme o caso, o tratamento pode se fundamentar em:</p>
@@ -232,6 +240,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 5. Compartilhamento === */}
         <section>
           <h2>5. Compartilhamento de dados</h2>
           <p>Podemos compartilhar dados apenas quando necessário:</p>
@@ -254,6 +263,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 6. Transferência === */}
         <section>
           <h2>6. Transferência internacional</h2>
           <p>
@@ -263,6 +273,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 7. Armazenamento === */}
         <section>
           <h2>7. Armazenamento, retenção e segurança</h2>
           <ul>
@@ -288,6 +299,7 @@ export default function PrivacidadePage() {
           </ul>
         </section>
 
+        {/* === 8. Cookies === */}
         <section>
           <h2>8. Cookies e armazenamento local</h2>
           <p>
@@ -298,6 +310,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 9. Direitos === */}
         <section>
           <h2>9. Direitos do titular</h2>
           <p>Nos termos da LGPD, você pode solicitar:</p>
@@ -317,6 +330,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 10. Menores === */}
         <section>
           <h2>10. Crianças e adolescentes</h2>
           <p>
@@ -326,6 +340,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 11. Alterações === */}
         <section>
           <h2>11. Alterações desta Política</h2>
           <p>
@@ -335,6 +350,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 12. Contato === */}
         <section>
           <h2>12. Contato e encarregado (DPO)</h2>
           <p>
@@ -357,6 +373,7 @@ export default function PrivacidadePage() {
           </p>
         </section>
 
+        {/* === 13. Aceite === */}
         <section className="legal-aceite-box">
           <h2>13. Aceite</h2>
           <p>
@@ -390,6 +407,7 @@ export default function PrivacidadePage() {
           )}
         </section>
 
+        {/* === Ações === */}
         <div className="legal-actions">
           <Link className="btn secondary" to="/">
             Início

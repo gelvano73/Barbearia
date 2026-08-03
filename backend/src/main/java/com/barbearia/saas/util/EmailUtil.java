@@ -44,6 +44,8 @@ public final class EmailUtil {
     private EmailUtil() {
     }
 
+    /** === Formato e domínio === */
+
     public static String normalizar(String email) {
         if (email == null) {
             return "";
@@ -98,6 +100,8 @@ public final class EmailUtil {
         }
         return false;
     }
+
+    /** === Cadastro === */
 
     /**
      * E-mail apto a cadastro: formato + não descartável/reservado.

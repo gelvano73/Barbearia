@@ -1,5 +1,6 @@
 /**
  * Cadastro de novo cliente no portal da barbearia.
+ * Carrega barbearias, valida e-mail/CPF/senha e exige aceite de privacidade.
  */
 import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
@@ -9,6 +10,7 @@ import { authApi } from '../../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../../utils/email'
 
 export default function PortalRegistroPage() {
+  /** === Estado === */
   const { isAuthenticated, isCliente, registroCliente } = useAuth()
   const [barbearias, setBarbearias] = useState([])
   const [aceitePrivacidade, setAceitePrivacidade] = useState(false)
@@ -24,7 +26,7 @@ export default function PortalRegistroPage() {
   const [loading, setLoading] = useState(false)
   const [carregandoLista, setCarregandoLista] = useState(true)
 
-  // Effect: carga inicial dos dados
+  /** === Lista de barbearias === */
   useEffect(() => {
     setCarregandoLista(true)
     authApi
@@ -48,10 +50,9 @@ export default function PortalRegistroPage() {
 
   if (isAuthenticated && isCliente) return <Navigate to="/portal" replace />
 
-  // Atualiza campos do formulário
+  /** === Submit do cadastro === */
   const onChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
 
-  // Submete o formulário
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -106,6 +107,7 @@ export default function PortalRegistroPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        {/* === Cabeçalho === */}
         <div className="brand">
           BARBA
           <span>PORTAL</span>
@@ -113,6 +115,7 @@ export default function PortalRegistroPage() {
         <h1>Cadastro do cliente</h1>
         <p className="subtitle">Crie sua conta para agendar online.</p>
 
+        {/* === Formulário === */}
         <form onSubmit={onSubmit}>
           <label>
             Barbearia
@@ -183,6 +186,7 @@ export default function PortalRegistroPage() {
           </button>
         </form>
 
+        {/* === Links === */}
         <div className="auth-toggle">
           Já tem conta? <Link to="/portal/login">Entrar</Link>
           <div style={{ marginTop: '0.5rem' }}>

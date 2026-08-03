@@ -6,9 +6,11 @@ import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
 import { estoqueApi } from '../services/resources'
 
+/** === Estado inicial === */
 const emptyProduto = { nome: '', unidade: 'UN', estoqueMinimo: 5 }
 const emptyMov = { produtoId: '', tipo: 'ENTRADA', quantidade: '', observacao: '' }
 
+/** === Helpers === */
 function formatDateTime(value) {
   return new Date(value).toLocaleString('pt-BR', {
     day: '2-digit',
@@ -38,6 +40,7 @@ function parseNumero(value) {
 }
 
 export default function EstoquePage() {
+  /** === Estado === */
   const [produtos, setProdutos] = useState([])
   const [movimentos, setMovimentos] = useState([])
   const [produtoOpen, setProdutoOpen] = useState(false)
@@ -48,7 +51,7 @@ export default function EstoquePage() {
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga de dados === */
   const carregar = async () => {
     setError('')
     const [prodsRes, movsRes] = await Promise.allSettled([
@@ -77,13 +80,13 @@ export default function EstoquePage() {
     }
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => {
       /* erro já definido em carregar */
     })
   }, [])
 
+  /** === Produtos === */
   const abrirNovoProduto = () => {
     setEditing(null)
     setFormProduto(emptyProduto)
@@ -91,7 +94,6 @@ export default function EstoquePage() {
     setProdutoOpen(true)
   }
 
-  // Abre o modal preenchido para edição
   const abrirEdicao = (p) => {
     setEditing(p)
     setFormProduto({
@@ -103,7 +105,6 @@ export default function EstoquePage() {
     setProdutoOpen(true)
   }
 
-  // Salva produto no estoque
   const salvarProduto = async (e) => {
     e.preventDefault()
     setError('')
@@ -144,13 +145,13 @@ export default function EstoquePage() {
     }
   }
 
-  // Desativa o registro selecionado
   const desativar = async (id) => {
     if (!confirm('Desativar este produto?')) return
     await estoqueApi.desativarProduto(id)
     await carregar()
   }
 
+  /** === Movimentos === */
   const abrirMovimento = (tipo, produtoId = '') => {
     setFormMov({ ...emptyMov, tipo, produtoId: produtoId ? String(produtoId) : '' })
     setError('')
@@ -158,7 +159,6 @@ export default function EstoquePage() {
     setMovOpen(true)
   }
 
-  // Registra movimentação de estoque
   const salvarMovimento = async (e) => {
     e.preventDefault()
     setError('')
@@ -189,6 +189,7 @@ export default function EstoquePage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Estoque</h1>
@@ -220,6 +221,7 @@ export default function EstoquePage() {
         </div>
       )}
 
+      {/* === Tabela de produtos === */}
       <div className="panel" style={{ marginBottom: '1rem' }}>
         {produtos.length === 0 ? (
           <div className="empty">Nenhum produto cadastrado.</div>
@@ -272,6 +274,7 @@ export default function EstoquePage() {
         )}
       </div>
 
+      {/* === Últimos movimentos === */}
       <div className="panel">
         <h2 style={{ marginTop: 0, fontSize: '1.1rem' }}>Últimos movimentos</h2>
         {movimentos.length === 0 ? (
@@ -306,6 +309,7 @@ export default function EstoquePage() {
         )}
       </div>
 
+      {/* === Modal produto === */}
       <Modal open={produtoOpen} title={editing ? 'Editar produto' : 'Novo produto'} onClose={() => setProdutoOpen(false)}>
         <form onSubmit={salvarProduto}>
           <div className="form-grid">
@@ -347,6 +351,7 @@ export default function EstoquePage() {
         </form>
       </Modal>
 
+      {/* === Modal movimento === */}
       <Modal
         open={movOpen}
         title={

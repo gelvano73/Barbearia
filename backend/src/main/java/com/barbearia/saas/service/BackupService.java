@@ -1,8 +1,11 @@
 package com.barbearia.saas.service;
 
+import com.barbearia.saas.domain.enums.PlanoRecurso;
+
 import com.barbearia.saas.config.BackupProperties;
 import com.barbearia.saas.config.StorageProperties;
 import com.barbearia.saas.exception.NegocioException;
+import com.barbearia.saas.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +41,7 @@ public class BackupService {
 
     private final BackupProperties properties;
     private final StorageProperties storageProperties;
+    private final PlanoAcessoService planoAcessoService;
     private final Environment environment;
 
     @Value("${app.upload.dir:uploads}")
@@ -48,8 +52,11 @@ public class BackupService {
 
     private volatile S3Client s3Client;
 
+    /** === Execução === */
+
     /** Executa um backup do banco de dados. */
     public Map<String, Object> executar() {
+        planoAcessoService.exigirRecurso(PlanoRecurso.BACKUP);
         Path root = Paths.get(properties.getDir()).toAbsolutePath().normalize();
         try {
             Files.createDirectories(root);
@@ -94,6 +101,9 @@ public class BackupService {
 
     /** Lista pastas de backup locais (mais recentes primeiro). */
     public List<Map<String, Object>> listar() {
+        if (!planoAcessoService.temRecurso(SecurityUtils.getBarbeariaIdAtual(), PlanoRecurso.BACKUP)) {
+            return List.of();
+        }
         Path root = Paths.get(properties.getDir()).toAbsolutePath().normalize();
         if (!Files.isDirectory(root)) {
             return List.of();
@@ -119,6 +129,8 @@ public class BackupService {
             throw new NegocioException("Não foi possível listar backups: " + e.getMessage());
         }
     }
+
+    /** === S3 === */
 
     private String enviarParaS3(Path dest, String stamp) {
         try {
@@ -162,6 +174,8 @@ public class BackupService {
         }
         return s3Client;
     }
+
+    /** === Banco e uploads === */
 
     private boolean backupBanco(Path dest) throws IOException, InterruptedException {
         if (datasourceUrl != null && datasourceUrl.contains("postgresql")) {
@@ -237,6 +251,8 @@ public class BackupService {
         return true;
     }
 
+    /** === Limpeza e zip === */
+
     private void limparAntigos(Path root) throws IOException {
         int dias = Math.max(1, properties.getRetentionDays());
         long cutoff = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(dias);
@@ -292,6 +308,8 @@ public class BackupService {
             });
         }
     }
+
+    /** === Auxiliares === */
 
     private String hostFromJdbc() {
         try {

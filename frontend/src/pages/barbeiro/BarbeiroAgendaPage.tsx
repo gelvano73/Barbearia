@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { barbeiroPortalApi } from '../../services/resources'
 
+/** === Helpers === */
 function formatDateTime(value) {
   return new Date(value).toLocaleString('pt-BR', {
     day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
@@ -11,22 +12,21 @@ function formatDateTime(value) {
 }
 
 export default function BarbeiroAgendaPage() {
+  /** === Estado === */
   const [data, setData] = useState(new Date().toISOString().slice(0, 10))
   const [itens, setItens] = useState([])
   const [error, setError] = useState('')
 
-  // Carrega a listagem principal da página
+  /** === Carga e ações === */
   const carregar = async () => {
     const { data: lista } = await barbeiroPortalApi.agenda(data)
     setItens(lista)
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Falha ao carregar agenda'))
   }, [data])
 
-  // Atualiza o status do pedido
   const status = async (id, novo) => {
     await barbeiroPortalApi.atualizarStatus(id, novo)
     await carregar()
@@ -34,6 +34,7 @@ export default function BarbeiroAgendaPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Agenda</h1>
@@ -44,6 +45,7 @@ export default function BarbeiroAgendaPage() {
           <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
         </label>
       </div>
+      {/* === Lista do dia === */}
       <div className="panel">
         {error && <div className="error">{error}</div>}
         {itens.length === 0 ? (

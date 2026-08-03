@@ -2,43 +2,54 @@
  * Dashboard inicial do admin com atalhos para os módulos.
  * Hero com imagem de fundo de barbearia e criação de recepcionista.
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/AuthContext'
+import { temRecurso, type PlanoRecurso } from '../data/planos'
 import { authApi } from '../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
+/** === Dados do dashboard === */
 const emptyAtendente = { nome: '', email: '', senha: '' }
 
-const atalhos = [
+const atalhos: { to: string; label: string; primary?: boolean; recurso?: PlanoRecurso }[] = [
   { to: '/clientes', label: 'Clientes', primary: true },
   { to: '/barbeiros', label: 'Barbeiros' },
   { to: '/servicos', label: 'Serviços' },
   { to: '/agendamentos', label: 'Agendamentos' },
   { to: '/pagamentos', label: 'Pagamentos' },
-  { to: '/fidelidade', label: 'Fidelidade' },
-  { to: '/estoque', label: 'Estoque' },
+  { to: '/fidelidade', label: 'Fidelidade', recurso: 'FIDELIDADE' },
+  { to: '/estoque', label: 'Estoque', recurso: 'ESTOQUE' },
   { to: '/caixa', label: 'Caixa' },
-  { to: '/comissoes', label: 'Comissões' },
+  { to: '/comissoes', label: 'Comissões', recurso: 'COMISSOES' },
   { to: '/relatorios', label: 'Relatórios' },
   { to: '/unidades', label: 'Unidades' },
-  { to: '/whatsapp', label: 'WhatsApp IA' },
-  { to: '/gestao', label: 'IA Gestão' },
-  { to: '/checkin', label: 'Check-in' },
-  { to: '/marketplace', label: 'Marketplace' },
-  { to: '/franquias', label: 'Franquias' },
+  { to: '/whatsapp', label: 'WhatsApp IA', recurso: 'WHATSAPP' },
+  { to: '/gestao', label: 'IA Gestão', recurso: 'IA_GESTAO' },
+  { to: '/checkin', label: 'Check-in', recurso: 'CHECKIN' },
+  { to: '/marketplace', label: 'Marketplace', recurso: 'MARKETPLACE' },
+  { to: '/franquias', label: 'Franquias', recurso: 'FRANQUIAS' },
   { to: '/recepcao', label: 'Portal recepção' },
 ]
 
 export default function DashboardPage() {
+  /** === Estado === */
   const { auth } = useAuth()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState(emptyAtendente)
   const [error, setError] = useState('')
   const [ok, setOk] = useState('')
 
-  // Cria conta de recepcionista
+  const atalhosVisiveis = useMemo(
+    () =>
+      atalhos.filter(
+        (item) => !item.recurso || temRecurso(auth?.plano as string | undefined, item.recurso),
+      ),
+    [auth?.plano],
+  )
+
+  /** === Criar recepcionista === */
   const criarAtendente = async (e) => {
     e.preventDefault()
     setError('')
@@ -63,6 +74,7 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/* === Hero e atalhos === */}
       <section className="dashboard-hero">
         <div className="dashboard-hero-bg" aria-hidden="true" />
         <div className="dashboard-hero-content">
@@ -87,7 +99,7 @@ export default function DashboardPage() {
           {ok && <p className="dashboard-ok">{ok}</p>}
 
           <div className="dashboard-shortcuts">
-            {atalhos.map((item) => (
+            {atalhosVisiveis.map((item) => (
               <Link
                 key={item.to}
                 className={`dashboard-chip ${item.primary ? 'primary' : ''}`}
@@ -100,6 +112,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      {/* === Modal recepcionista === */}
       <Modal open={open} title="Criar conta de recepcionista" onClose={() => setOpen(false)}>
         <form onSubmit={criarAtendente}>
           <div className="form-grid">

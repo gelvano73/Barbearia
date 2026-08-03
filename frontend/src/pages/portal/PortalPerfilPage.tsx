@@ -7,6 +7,7 @@ import FotoField from '../../components/FotoField'
 import { portalApi } from '../../services/resources'
 
 export default function PortalPerfilPage() {
+  /** === Estado === */
   const [perfil, setPerfil] = useState(null)
   const [nome, setNome] = useState('')
   const [telefone, setTelefone] = useState('')
@@ -14,7 +15,7 @@ export default function PortalPerfilPage() {
   const [ok, setOk] = useState('')
   const [uploading, setUploading] = useState(false)
 
-  // Carrega a listagem principal da página
+  /** === Carga e ações === */
   const carregar = async () => {
     const { data } = await portalApi.perfil()
     setPerfil(data)
@@ -22,12 +23,10 @@ export default function PortalPerfilPage() {
     setTelefone(data.telefone || '')
   }
 
-  // Effect: carga inicial dos dados
   useEffect(() => {
     carregar().catch(() => setError('Falha ao carregar perfil'))
   }, [])
 
-  // Salva criação ou edição do formulário
   const salvar = async (e) => {
     e.preventDefault()
     setError('')
@@ -41,7 +40,6 @@ export default function PortalPerfilPage() {
     }
   }
 
-  // Envia a foto de perfil
   const onFoto = async (file) => {
     setError('')
     setOk('')
@@ -61,12 +59,14 @@ export default function PortalPerfilPage() {
 
   return (
     <>
+      {/* === Cabeçalho === */}
       <div className="page-header">
         <div>
           <h1>Perfil</h1>
           <p>Seus dados e foto</p>
         </div>
       </div>
+      {/* === Formulário === */}
       <div className="panel">
         <FotoField fotoUrl={perfil.fotoUrl} onUpload={onFoto} disabled={uploading} />
         <form onSubmit={salvar} style={{ marginTop: '1.25rem' }}>
