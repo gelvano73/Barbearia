@@ -40,7 +40,14 @@ export default function AssinaturaPage() {
       }
       await carregar()
     } catch (err) {
-      setError(err.response?.data?.mensagem || 'Falha ao iniciar upgrade')
+      const data = err.response?.data
+      const detalhes = Array.isArray(data?.detalhes) ? data.detalhes.join(' · ') : ''
+      setError(
+        detalhes ||
+          data?.mensagem ||
+          err.message ||
+          'Falha ao iniciar upgrade. Verifique a API e o Mercado Pago.',
+      )
     } finally {
       setBusy(false)
     }
