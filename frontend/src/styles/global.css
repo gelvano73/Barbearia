@@ -25,22 +25,19 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
-  height: 100%;
-  max-height: 100%;
-  margin: 0;
+html {
+  height: auto;
+  min-height: 100%;
 }
 
-#root {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+html, body {
+  margin: 0;
 }
 
 body {
-  margin: 0;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-family: var(--font-body);
   color: var(--ink);
   background:
@@ -48,6 +45,11 @@ body {
     radial-gradient(ellipse 60% 40% at 90% 0%, rgba(120, 80, 40, 0.2), transparent 50%),
     linear-gradient(160deg, #0f0d0b 0%, #1a1612 45%, #12100e 100%);
   background-attachment: fixed;
+}
+
+#root {
+  min-height: 100dvh;
+  overflow: visible;
 }
 
 a {
@@ -63,17 +65,14 @@ button {
   cursor: pointer;
 }
 
-/* === Layout === */
+/* === Layout (desktop: a pagina rola; menu lateral fica sticky) === */
 .app-shell {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-  max-height: 100dvh;
   display: grid;
   grid-template-columns: 210px minmax(0, 1fr);
-  /* minmax(0,1fr) é essencial: sem isso o grid não deixa .main encolher e o scroll nunca aparece */
-  grid-template-rows: minmax(0, 1fr);
-  overflow: hidden;
+  grid-template-rows: auto;
+  min-height: 100dvh;
+  align-items: start;
+  overflow: visible;
 }
 
 .mobile-topbar,
@@ -92,17 +91,20 @@ button {
 
 /* === Sidebar === */
 .sidebar {
-  min-height: 0;
-  height: 100%;
-  max-height: 100%;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100dvh;
+  max-height: 100dvh;
   padding: 1rem 0.85rem;
   border-right: 1px solid var(--line);
-  background: rgba(18, 16, 14, 0.72);
+  background: rgba(18, 16, 14, 0.92);
   backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   overflow: hidden;
+  z-index: 5;
 }
 
 .brand {
@@ -156,26 +158,22 @@ button {
   font-size: 0.85rem;
 }
 
-/* === Conteúdo principal === */
+/* === Conteudo principal === */
 .main {
   min-width: 0;
-  min-height: 0;
-  height: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: auto;
+  max-height: none;
   padding: 1.1rem 1.35rem;
-  padding-bottom: max(2rem, env(safe-area-inset-bottom));
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+  overflow: visible;
   display: block;
-  -webkit-overflow-scrolling: touch;
 }
 
 .main > * {
   min-width: 0;
 }
 
-/* Páginas longas (ex.: Fiscal) — altura natural; o scroll fica em .main */
 .main > .page {
   display: block;
   width: 100%;
@@ -187,7 +185,6 @@ button {
   margin-bottom: 0.85rem;
 }
 
-/* Listagens com painel: mantém scroll interno quando o conteúdo é tabela */
 .main > .panel {
   margin-bottom: 0.85rem;
 }
@@ -196,7 +193,6 @@ button {
 .main > .panel:has(.empty),
 .main > .panel:has(.ia-chat),
 .main > .panel:last-child {
-  /* sem flex encolhendo: o .main já rola a página inteira */
   max-height: none;
   overflow: visible;
 }
@@ -953,26 +949,29 @@ label.btn.is-disabled {
 /* === Responsivo (tablet + celular) === */
 @media (max-width: 1024px) {
   html, body, #root {
-    height: 100%;
-    max-height: 100%;
+    height: auto;
+    min-height: 100%;
+    max-height: none;
     overflow-x: hidden;
   }
 
   body {
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   body.nav-open {
     overflow: hidden;
+    height: 100dvh;
   }
 
-  /* Flex evita que sidebar/backdrop fixos ocupem células do grid */
+  /* Flex: topbar + main; drawer do menu fica fixed */
   .app-shell {
     display: flex;
     flex-direction: column;
-    height: 100dvh;
-    max-height: 100dvh;
-    overflow: hidden;
+    min-height: 100dvh;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .mobile-topbar {
@@ -1154,17 +1153,13 @@ label.btn.is-disabled {
     flex: 1 1 auto;
     width: 100%;
     min-width: 0;
-    min-height: 0;
     height: auto;
     max-height: none;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    overflow: visible;
     padding: 0.85rem;
-    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    padding-bottom: max(3rem, env(safe-area-inset-bottom));
     padding-left: max(0.85rem, env(safe-area-inset-left));
     padding-right: max(0.85rem, env(safe-area-inset-right));
-    -webkit-overflow-scrolling: touch;
   }
 
   .main > .page {
