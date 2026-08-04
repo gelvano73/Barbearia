@@ -51,6 +51,13 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
   }, [menuOpen])
 
   useEffect(() => {
+    // limpa travas de scroll deixadas por modal/menu
+    document.body.classList.remove('modal-open')
+    document.body.style.overflow = ''
+    document.documentElement.style.overflow = ''
+  }, [location.pathname])
+
+  useEffect(() => {
     if (menuOpen && isMobile) {
       document.body.classList.add('nav-open')
     } else {
@@ -115,7 +122,15 @@ export default function AppShell({ brandTitle, brandSubtitle, nav, footer, child
       </aside>
 
       {/* === Conteúdo === */}
-      <main className="main" id="app-main">
+      <main
+        className="main"
+        id="app-main"
+        style={
+          isMobile
+            ? undefined
+            : { overflowY: 'scroll', height: '100%', minHeight: 0, WebkitOverflowScrolling: 'touch' }
+        }
+      >
         {children}
       </main>
     </div>

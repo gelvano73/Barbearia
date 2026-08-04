@@ -25,18 +25,14 @@
   box-sizing: border-box;
 }
 
-html {
-  height: auto;
-  min-height: 100%;
-}
-
-html, body {
+html,
+body {
   margin: 0;
+  height: 100%;
 }
 
 body {
-  min-height: 100dvh;
-  /* clip evita o bug de overflow-x:hidden + overflow-y:auto que trava o scroll da página */
+  min-height: 100%;
   overflow-x: clip;
   overflow-y: auto;
   font-family: var(--font-body);
@@ -45,25 +41,15 @@ body {
     radial-gradient(ellipse 80% 50% at 10% -10%, rgba(201, 162, 39, 0.18), transparent 55%),
     radial-gradient(ellipse 60% 40% at 90% 0%, rgba(120, 80, 40, 0.2), transparent 50%),
     linear-gradient(160deg, #0f0d0b 0%, #1a1612 45%, #12100e 100%);
-  background-attachment: fixed;
 }
 
-body.modal-open {
+body.modal-open,
+body.nav-open {
   overflow: hidden;
 }
 
 #root {
-  min-height: 100dvh;
-  overflow: visible;
-}
-
-/* Painéis com sidebar: trava o documento e rola só o conteúdo (desktop) */
-html:has(.app-shell),
-html:has(.app-shell) body,
-html:has(.app-shell) #root {
-  height: 100%;
-  max-height: 100dvh;
-  overflow: hidden;
+  min-height: 100%;
 }
 
 a {
@@ -79,16 +65,17 @@ button {
   cursor: pointer;
 }
 
-/* === Layout (desktop: sidebar fixa; .main rola) === */
+/* === Layout desktop: shell fixo; só .main rola === */
 .app-shell {
-  display: grid;
-  grid-template-columns: 210px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
   max-height: 100dvh;
-  min-height: 0;
-  align-items: stretch;
   overflow: hidden;
+  z-index: 1;
 }
 
 .mobile-topbar,
@@ -108,10 +95,10 @@ button {
 /* === Sidebar === */
 .sidebar {
   position: relative;
-  align-self: stretch;
+  flex: 0 0 210px;
+  width: 210px;
   height: 100%;
   min-height: 0;
-  max-height: none;
   padding: 1rem 0.85rem;
   border-right: 1px solid var(--line);
   background: rgba(18, 16, 14, 0.92);
@@ -174,17 +161,18 @@ button {
   font-size: 0.85rem;
 }
 
-/* === Conteudo principal === */
+/* === Conteudo principal (ÚNICA área de scroll do painel) === */
 .main {
+  flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
-  width: 100%;
+  width: auto;
   height: 100%;
   max-height: 100%;
   padding: 1.1rem 1.35rem;
   padding-bottom: max(3rem, env(safe-area-inset-bottom));
-  overflow-x: clip;
-  overflow-y: auto;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   display: block;
@@ -1049,9 +1037,6 @@ label.btn.is-disabled {
 
 /* === Responsivo (tablet + celular) === */
 @media (max-width: 1024px) {
-  html:has(.app-shell),
-  html:has(.app-shell) body,
-  html:has(.app-shell) #root,
   html, body, #root {
     height: auto;
     min-height: 100%;
@@ -1071,14 +1056,18 @@ label.btn.is-disabled {
     max-height: 100dvh;
   }
 
-  /* Flex: topbar + main; drawer do menu fica fixed */
+  /* Flex coluna: topbar + main; drawer do menu fica fixed */
   .app-shell {
+    position: relative;
+    inset: auto;
     display: flex;
     flex-direction: column;
+    width: 100%;
     min-height: 100dvh;
     height: auto;
     max-height: none;
     overflow: visible;
+    z-index: auto;
   }
 
   .mobile-topbar {
@@ -1260,9 +1249,9 @@ label.btn.is-disabled {
     flex: 1 1 auto;
     width: 100%;
     min-width: 0;
-    height: auto;
-    max-height: none;
-    overflow: visible;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     padding: 0.85rem;
     padding-bottom: max(3rem, env(safe-area-inset-bottom));
     padding-left: max(0.85rem, env(safe-area-inset-left));
