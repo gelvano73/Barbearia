@@ -56,11 +56,19 @@ public class EmailService {
     @Value("${app.mail.resend-from:Barba SaaS <onboarding@resend.dev>}")
     private String resendFrom;
 
+    /** Quando false, não tenta SMTP (útil no Railway, onde Gmail SMTP costuma dar timeout). */
+    @Value("${app.mail.smtp-enabled:true}")
+    private boolean smtpEnabled;
+
     /** === Status === */
 
-    /** True quando há Resend ou SMTP configurado. */
+    /** True quando há Resend ou SMTP utilizável. */
     public boolean isConfigurado() {
-        return temResend() || (mailHost != null && !mailHost.isBlank());
+        return temResend() || temSmtp();
+    }
+
+    private boolean temSmtp() {
+        return smtpEnabled && mailHost != null && !mailHost.isBlank();
     }
 
     /** === Envio === */
@@ -94,7 +102,11 @@ public class EmailService {
             }
         }
 
-        if (mailHost == null || mailHost.isBlank()) {
+        if (!temSmtp()) {
+            if (!temResend()) {
+                log.info("[Email SIMULADO] para={} assunto={} | Configure RESEND_API_KEY (recomendado)", to, subject);
+                registrar(barbeariaId, to, subject, body, StatusNotificacao.SIMULADO);
+            }
             return false;
         }
 

@@ -34,6 +34,7 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
   const [step, setStep] = useState(1)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   /** === Token na URL === */
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
       setError('Informe o e-mail ou CPF cadastrado')
       return
     }
+    setLoading(true)
     try {
       const { data } = await authApi.recuperarSenha({ login: valor })
       setTokenDev(data.tokenDev || '')
@@ -62,23 +64,28 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
       setStep(2)
       if (data.emailEnviado === false && data.smtpConfigurado === false && !data.tokenDev) {
         setError(
-          'O servidor ainda não tem SMTP configurado. Peça ao administrador para definir MAIL_HOST/MAIL_USERNAME/MAIL_PASSWORD.',
+          'O servidor ainda não tem envio de e-mail configurado (RESEND_API_KEY). Peça ao administrador.',
         )
       }
     } catch (err) {
-      setError(err.response?.data?.mensagem || 'Falha ao solicitar recuperação')
+      setError(err.response?.data?.mensagem || 'Falha ao solicitar recuperação. Tente de novo.')
+    } finally {
+      setLoading(false)
     }
   }
 
   const redefinir = async (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
     try {
       await authApi.redefinirSenha({ token, novaSenha })
       setMessage('Senha redefinida. Faça login.')
       setStep(3)
     } catch (err) {
       setError(err.response?.data?.mensagem || 'Falha ao redefinir senha')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -110,7 +117,9 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
               />
             </label>
             {error && <div className="error">{error}</div>}
-            <button className="btn" type="submit">Enviar link</button>
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? 'Enviando…' : 'Enviar link'}
+            </button>
           </form>
         )}
 
@@ -144,7 +153,9 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
               />
             </label>
             {error && <div className="error">{error}</div>}
-            <button className="btn" type="submit">Redefinir</button>
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? 'Salvando…' : 'Redefinir'}
+            </button>
           </form>
         )}
 

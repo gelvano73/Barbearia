@@ -34,9 +34,10 @@ public class MailSmtpConfig {
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.connectiontimeout", "20000");
-        props.put("mail.smtp.timeout", "20000");
-        props.put("mail.smtp.writetimeout", "20000");
+        // Timeouts curtos: no Railway o Gmail SMTP costuma bloquear e segurava a UI ~20s.
+        props.put("mail.smtp.connectiontimeout", "5000");
+        props.put("mail.smtp.timeout", "5000");
+        props.put("mail.smtp.writetimeout", "5000");
 
         if (port == 465) {
             props.put("mail.smtp.ssl.enable", "true");

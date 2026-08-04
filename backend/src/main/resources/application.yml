@@ -59,6 +59,8 @@ app:
     resend-api-key: ${RESEND_API_KEY:}
     # Com onboarding@resend.dev só entrega no e-mail da conta Resend (teste).
     resend-from: ${RESEND_FROM:Barba SaaS <onboarding@resend.dev>}
+    # false no Railway: evita timeout de 20s no SMTP bloqueado.
+    smtp-enabled: ${MAIL_SMTP_ENABLED:true}
   security:
     expose-dev-tokens: ${EXPOSE_DEV_TOKENS:false}
   assinatura:
