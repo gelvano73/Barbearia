@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from 'react'
 import CepLookupField from '../components/CepLookupField'
+import PasswordInput from '../components/PasswordInput'
 import { EmptyState, LoadingState } from '../components/LoadingEmpty'
 import { fiscalApi } from '../services/resources'
 
@@ -175,7 +176,7 @@ export default function FiscalPage() {
         </label>
         <label>
           Token Focus NFe {meta?.possuiToken ? '(deixe em branco para manter)' : ''}
-          <input type="password" value={config.nfseToken} onChange={(e) => setConfig({ ...config, nfseToken: e.target.value })} autoComplete="off" />
+          <PasswordInput value={config.nfseToken} onChange={(e) => setConfig({ ...config, nfseToken: e.target.value })} autoComplete="off" />
         </label>
 
         <h2 style={{ margin: '0.5rem 0 0', fontSize: '1.1rem' }}>Endereço</h2>

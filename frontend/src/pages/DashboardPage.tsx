@@ -5,6 +5,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Modal from '../components/Modal'
+import PasswordInput from '../components/PasswordInput'
 import { useAuth } from '../context/AuthContext'
 import { temRecurso, type PlanoRecurso } from '../data/planos'
 import { authApi } from '../services/resources'
@@ -135,12 +136,12 @@ export default function DashboardPage() {
             </label>
             <label className="full">
               Senha
-              <input
-                type="password"
+              <PasswordInput
                 value={form.senha}
                 onChange={(e) => setForm({ ...form, senha: e.target.value })}
                 required
                 minLength={6}
+                autoComplete="new-password"
               />
             </label>
           </div>

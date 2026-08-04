@@ -4,6 +4,7 @@
  */
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
+import PasswordInput from '../../components/PasswordInput'
 import { useAuth } from '../../context/AuthContext'
 
 export default function BarbeiroLoginPage() {
@@ -50,9 +51,12 @@ export default function BarbeiroLoginPage() {
           </label>
           <label>
             Senha (mín. 8, maiúscula, minúscula e número)
-            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={8} />
+            <PasswordInput value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={8} autoComplete="current-password" />
           </label>
-          <Link className="auth-forgot" to="/recuperar-senha?voltar=/barbeiro/login">
+          <Link
+            className="auth-forgot"
+            to={`/recuperar-senha?voltar=/barbeiro/login${email.trim() ? `&login=${encodeURIComponent(email.trim())}` : ''}`}
+          >
             Esqueci minha senha
           </Link>
           {error && <div className="error">{error}</div>}

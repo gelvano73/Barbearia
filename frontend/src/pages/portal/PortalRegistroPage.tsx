@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
+import PasswordInput from '../../components/PasswordInput'
 import AceitePrivacidade from '../../components/AceitePrivacidade'
 import { useAuth } from '../../context/AuthContext'
 import { authApi } from '../../services/resources'
@@ -166,13 +167,13 @@ export default function PortalRegistroPage() {
           </label>
           <label>
             Senha (mín. 8, maiúscula, minúscula e número)
-            <input
-              type="password"
+            <PasswordInput
               name="senha"
               value={form.senha}
               onChange={onChange}
               required
               minLength={8}
+              autoComplete="new-password"
             />
           </label>
           <AceitePrivacidade checked={aceitePrivacidade} onChange={setAceitePrivacidade} />

@@ -109,7 +109,7 @@ class AuthClienteServiceTest {
         when(emailService.isConfigurado()).thenReturn(true);
 
         RecuperarSenhaRequest request = new RecuperarSenhaRequest();
-        request.setEmail("cli@teste.com");
+        request.setLogin("cli@teste.com");
 
         RecuperarSenhaResponse response = authService.recuperarSenha(request);
 

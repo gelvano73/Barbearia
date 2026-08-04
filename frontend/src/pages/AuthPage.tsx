@@ -5,6 +5,7 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import AceitePrivacidade from '../components/AceitePrivacidade'
+import PasswordInput from '../components/PasswordInput'
 import { useAuth } from '../context/AuthContext'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
@@ -163,8 +164,7 @@ export default function AuthPage() {
             <>
               <label>
                 Senha (mín. 8, maiúscula, minúscula e número)
-                <input
-                  type="password"
+                <PasswordInput
                   name="senha"
                   value={form.senha}
                   onChange={onChange}
@@ -174,7 +174,10 @@ export default function AuthPage() {
                 />
               </label>
               {mode === 'login' && (
-                <Link className="auth-forgot" to="/recuperar-senha?voltar=/auth">
+                <Link
+                  className="auth-forgot"
+                  to={`/recuperar-senha?voltar=/auth${form.login.trim() ? `&login=${encodeURIComponent(form.login.trim())}` : ''}`}
+                >
                   Esqueci minha senha
                 </Link>
               )}

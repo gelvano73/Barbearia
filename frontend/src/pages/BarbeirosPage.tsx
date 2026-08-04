@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import Modal from '../components/Modal'
+import PasswordInput from '../components/PasswordInput'
 import FotoField from '../components/FotoField'
 import { barbeirosApi } from '../services/resources'
 import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
@@ -261,7 +262,7 @@ export default function BarbeirosPage() {
             </label>
             <label className="full">
               Senha
-              <input type="password" value={conta.senha} onChange={(e) => setConta({ ...conta, senha: e.target.value })} required minLength={6} />
+              <PasswordInput value={conta.senha} onChange={(e) => setConta({ ...conta, senha: e.target.value })} required minLength={6} autoComplete="new-password" />
             </label>
           </div>
           {error && <div className="error" style={{ marginTop: '0.8rem' }}>{error}</div>}

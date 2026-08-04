@@ -1,11 +1,11 @@
 /**
  * Recuperação de senha (admin, cliente e demais papéis).
- * Solicita link por e-mail e conclui a troca com o token.
+ * Solicita com e-mail ou CPF e conclui a troca com o token.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import PasswordInput from '../components/PasswordInput'
 import { authApi } from '../services/resources'
-import { emailRealOk, MSG_EMAIL_INVALIDO } from '../utils/email'
 
 type Props = {
   brand?: string
@@ -27,7 +27,7 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
     return LOGIN_POR_VOLTAR[voltar] || { path: loginPath, brand }
   }, [searchParams, loginPath, brand])
 
-  const [email, setEmail] = useState('')
+  const [login, setLogin] = useState(() => searchParams.get('login') || '')
   const [token, setToken] = useState('')
   const [novaSenha, setNovaSenha] = useState('')
   const [tokenDev, setTokenDev] = useState('')
@@ -49,15 +49,16 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
   const solicitar = async (e) => {
     e.preventDefault()
     setError('')
-    if (!emailRealOk(email)) {
-      setError(MSG_EMAIL_INVALIDO)
+    const valor = login.trim()
+    if (!valor) {
+      setError('Informe o e-mail ou CPF cadastrado')
       return
     }
     try {
-      const { data } = await authApi.recuperarSenha({ email })
+      const { data } = await authApi.recuperarSenha({ login: valor })
       setTokenDev(data.tokenDev || '')
       if (data.tokenDev) setToken(data.tokenDev)
-      setMessage(data.mensagem || 'Verifique seu e-mail para o link de redefinição.')
+      setMessage(data.mensagem || 'Se a conta existir, enviaremos o link no e-mail cadastrado.')
       setStep(2)
       if (data.emailEnviado === false && data.smtpConfigurado === false && !data.tokenDev) {
         setError(
@@ -90,17 +91,26 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
           <span>{origem.brand}</span>
         </div>
         <h1>Recuperar senha</h1>
-        <p className="subtitle">Enviaremos um link para o e-mail cadastrado.</p>
+        <p className="subtitle">
+          Informe o e-mail ou CPF da conta. O link de redefinição chega no e-mail cadastrado.
+        </p>
 
         {/* === Passo 1: solicitar === */}
         {step === 1 && (
           <form onSubmit={solicitar}>
             <label>
-              Email
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              E-mail ou CPF
+              <input
+                type="text"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
+                required
+                autoComplete="username"
+                placeholder="voce@provedor.com ou 000.000.000-00"
+              />
             </label>
             {error && <div className="error">{error}</div>}
-            <button className="btn" type="submit">Enviar</button>
+            <button className="btn" type="submit">Enviar link</button>
           </form>
         )}
 
@@ -119,14 +129,14 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
             </label>
             <label>
               Nova senha (mín. 8, maiúscula, minúscula e número)
-              <input
-                type="password"
+              <PasswordInput
                 value={novaSenha}
                 onChange={(e) => setNovaSenha(e.target.value)}
                 required
                 minLength={8}
                 pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
                 title="Mínimo 8 caracteres com maiúscula, minúscula e número"
+                autoComplete="new-password"
               />
             </label>
             {error && <div className="error">{error}</div>}
@@ -143,7 +153,7 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
         )}
 
         <div className="auth-toggle">
-          <Link to={origem.path}>Voltar</Link>
+          <Link to={origem.path}>Voltar ao login</Link>
         </div>
       </div>
     </div>

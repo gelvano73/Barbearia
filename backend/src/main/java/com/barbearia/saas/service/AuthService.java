@@ -322,14 +322,15 @@ public class AuthService {
 
     /** === Recuperação de senha === */
 
-    /** Inicia o fluxo de recuperação de senha. */
+    /** Inicia o fluxo de recuperação de senha (login = e-mail ou CPF). */
     @Transactional
     public RecuperarSenhaResponse recuperarSenha(RecuperarSenhaRequest request) {
-        String email = EmailUtil.normalizar(request.getEmail());
-        String mensagemPadrao = "Se o e-mail existir e estiver ativo, enviaremos instruções de recuperação";
+        String mensagemPadrao = "Se a conta existir e estiver ativa, enviaremos instruções de recuperação";
 
-        var usuarioOpt = usuarioRepository.findByEmail(email);
-        if (usuarioOpt.isEmpty()) {
+        Usuario usuario;
+        try {
+            usuario = buscarPorLogin(request.getLogin());
+        } catch (NegocioException ex) {
             return RecuperarSenhaResponse.builder()
                     .mensagem(mensagemPadrao)
                     .emailEnviado(false)
@@ -337,7 +338,15 @@ public class AuthService {
                     .build();
         }
 
-        Usuario usuario = usuarioOpt.get();
+        if (!Boolean.TRUE.equals(usuario.getAtivo()) || usuario.getEmail() == null || usuario.getEmail().isBlank()) {
+            return RecuperarSenhaResponse.builder()
+                    .mensagem(mensagemPadrao)
+                    .emailEnviado(false)
+                    .smtpConfigurado(emailService.isConfigurado())
+                    .build();
+        }
+
+        String email = EmailUtil.normalizar(usuario.getEmail());
         String token = UUID.randomUUID().toString().replace("-", "");
         passwordResetTokenRepository.save(PasswordResetToken.builder()
                 .usuario(usuario)
@@ -360,7 +369,7 @@ public class AuthService {
                         + "Se você não solicitou essa alteração, ignore este e-mail.");
 
         String mensagem = enviado
-                ? "Se o e-mail existir, enviamos um link para redefinir a senha. Verifique a caixa de entrada e o spam."
+                ? "Se a conta existir, enviamos um link para redefinir a senha no e-mail cadastrado. Verifique a caixa de entrada e o spam."
                 : (emailService.isConfigurado()
                         ? "Não foi possível enviar o e-mail agora. Tente novamente em instantes."
                         : mensagemPadrao);
