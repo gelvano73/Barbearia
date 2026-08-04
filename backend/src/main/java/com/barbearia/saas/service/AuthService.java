@@ -369,9 +369,9 @@ public class AuthService {
                         + "Se você não solicitou essa alteração, ignore este e-mail.");
 
         String mensagem = enviado
-                ? "Se a conta existir, enviamos um link para redefinir a senha no e-mail cadastrado. Verifique a caixa de entrada e o spam."
+                ? "Enviamos um link para redefinir a senha no e-mail cadastrado da conta. Verifique a caixa de entrada e o spam."
                 : (emailService.isConfigurado()
-                        ? "Não foi possível enviar o e-mail agora. Tente novamente em instantes."
+                        ? "Não foi possível enviar o e-mail agora (SMTP). Confira spam ou tente novamente em instantes."
                         : mensagemPadrao);
 
         RecuperarSenhaResponse.RecuperarSenhaResponseBuilder builder = RecuperarSenhaResponse.builder()

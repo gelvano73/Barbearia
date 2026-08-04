@@ -69,8 +69,14 @@ public class EmailService {
             log.info("E-mail enviado para {}", to);
             return true;
         } catch (Exception e) {
-            log.error("Falha ao enviar e-mail para {}: {}", to, e.getMessage(), e);
-            registrar(barbeariaId, to, subject, body, StatusNotificacao.ERRO);
+            String detalhe = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            Throwable cause = e.getCause();
+            while (cause != null && cause.getMessage() != null) {
+                detalhe = cause.getMessage();
+                cause = cause.getCause();
+            }
+            log.error("Falha ao enviar e-mail para {}: {}", to, detalhe, e);
+            registrar(barbeariaId, to, subject, body + "\n\n[erro smtp] " + detalhe, StatusNotificacao.ERRO);
             return false;
         }
     }
