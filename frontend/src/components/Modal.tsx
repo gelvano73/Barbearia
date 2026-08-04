@@ -15,13 +15,12 @@ type ModalProps = {
 }
 
 export default function Modal({ open, title, onClose, children }: ModalProps) {
-  /** === Efeito de scroll === */
+  /** === Efeito de scroll (classe evita overflow inline preso) === */
   useEffect(() => {
     if (!open) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    document.body.classList.add('modal-open')
     return () => {
-      document.body.style.overflow = prev
+      document.body.classList.remove('modal-open')
     }
   }, [open])
 

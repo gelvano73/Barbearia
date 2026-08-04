@@ -36,7 +36,8 @@ html, body {
 
 body {
   min-height: 100dvh;
-  overflow-x: hidden;
+  /* clip evita o bug de overflow-x:hidden + overflow-y:auto que trava o scroll da página */
+  overflow-x: clip;
   overflow-y: auto;
   font-family: var(--font-body);
   color: var(--ink);
@@ -47,9 +48,22 @@ body {
   background-attachment: fixed;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 #root {
   min-height: 100dvh;
   overflow: visible;
+}
+
+/* Painéis com sidebar: trava o documento e rola só o conteúdo (desktop) */
+html:has(.app-shell),
+html:has(.app-shell) body,
+html:has(.app-shell) #root {
+  height: 100%;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
 a {
@@ -65,14 +79,16 @@ button {
   cursor: pointer;
 }
 
-/* === Layout (desktop: a pagina rola; menu lateral fica sticky) === */
+/* === Layout (desktop: sidebar fixa; .main rola) === */
 .app-shell {
   display: grid;
   grid-template-columns: 210px minmax(0, 1fr);
-  grid-template-rows: auto;
-  min-height: 100dvh;
-  align-items: start;
-  overflow: visible;
+  grid-template-rows: minmax(0, 1fr);
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  align-items: stretch;
+  overflow: hidden;
 }
 
 .mobile-topbar,
@@ -91,11 +107,11 @@ button {
 
 /* === Sidebar === */
 .sidebar {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  height: 100dvh;
-  max-height: 100dvh;
+  position: relative;
+  align-self: stretch;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
   padding: 1rem 0.85rem;
   border-right: 1px solid var(--line);
   background: rgba(18, 16, 14, 0.92);
@@ -161,12 +177,16 @@ button {
 /* === Conteudo principal === */
 .main {
   min-width: 0;
+  min-height: 0;
   width: 100%;
-  height: auto;
-  max-height: none;
+  height: 100%;
+  max-height: 100%;
   padding: 1.1rem 1.35rem;
   padding-bottom: max(3rem, env(safe-area-inset-bottom));
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   display: block;
 }
 
@@ -1029,20 +1049,26 @@ label.btn.is-disabled {
 
 /* === Responsivo (tablet + celular) === */
 @media (max-width: 1024px) {
+  html:has(.app-shell),
+  html:has(.app-shell) body,
+  html:has(.app-shell) #root,
   html, body, #root {
     height: auto;
     min-height: 100%;
     max-height: none;
-    overflow-x: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
   }
 
   body {
     overflow-y: auto;
   }
 
-  body.nav-open {
+  body.nav-open,
+  body.modal-open {
     overflow: hidden;
     height: 100dvh;
+    max-height: 100dvh;
   }
 
   /* Flex: topbar + main; drawer do menu fica fixed */
