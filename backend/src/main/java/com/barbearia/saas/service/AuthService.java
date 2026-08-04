@@ -381,7 +381,9 @@ public class AuthService {
         if (securityAppProperties.isExposeDevTokens()) {
             builder.tokenDev(token);
             if (!enviado) {
-                builder.mensagem(mensagem + " (modo dev: use o token exibido ou o link do log)");
+                builder.mensagem(
+                        "Não foi possível enviar e-mail pelo servidor. Use o token abaixo para redefinir a senha agora."
+                );
             }
         }
         return builder.build();

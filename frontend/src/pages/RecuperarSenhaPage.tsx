@@ -119,9 +119,13 @@ export default function RecuperarSenhaPage({ brand = 'SAAS', loginPath = '/auth'
           <form onSubmit={redefinir}>
             {message && <p className="subtitle">{message}</p>}
             {tokenDev && (
-              <p className="subtitle">
-                Token (dev): <code>{tokenDev}</code>
-              </p>
+              <div className="panel" style={{ marginTop: '0.75rem', padding: '0.85rem' }}>
+                <strong>Token para redefinir agora</strong>
+                <p className="subtitle" style={{ margin: '0.4rem 0' }}>
+                  O e-mail não saiu do servidor. Copie o token abaixo (ou use o campo Token) e defina a nova senha.
+                </p>
+                <code style={{ display: 'block', wordBreak: 'break-all' }}>{tokenDev}</code>
+              </div>
             )}
             <label>
               Token
