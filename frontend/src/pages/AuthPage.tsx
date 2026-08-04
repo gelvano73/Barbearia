@@ -160,18 +160,25 @@ export default function AuthPage() {
               </label>
             )
           ) : (
-            <label>
-              Senha (mín. 8, maiúscula, minúscula e número)
-              <input
-                type="password"
-                name="senha"
-                value={form.senha}
-                onChange={onChange}
-                required={mode === 'registro' || !otpMode}
-                minLength={8}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              />
-            </label>
+            <>
+              <label>
+                Senha (mín. 8, maiúscula, minúscula e número)
+                <input
+                  type="password"
+                  name="senha"
+                  value={form.senha}
+                  onChange={onChange}
+                  required={mode === 'registro' || !otpMode}
+                  minLength={8}
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                />
+              </label>
+              {mode === 'login' && (
+                <Link className="auth-forgot" to="/recuperar-senha?voltar=/auth">
+                  Esqueci minha senha
+                </Link>
+              )}
+            </>
           )}
 
           {mode === 'registro' && (
@@ -212,14 +219,9 @@ export default function AuthPage() {
 
         <div className="auth-toggle">
           {mode === 'login' ? (
-            <>
-              <button type="button" onClick={() => setMode('registro')}>
-                Abrir conta
-              </button>
-              <div style={{ marginTop: '0.65rem' }}>
-                <Link to="/recuperar-senha?voltar=/auth">Esqueci minha senha</Link>
-              </div>
-            </>
+            <button type="button" onClick={() => setMode('registro')}>
+              Abrir conta
+            </button>
           ) : (
             <button type="button" onClick={() => setMode('login')}>
               Já tenho conta

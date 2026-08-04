@@ -52,6 +52,9 @@ export default function BarbeiroLoginPage() {
             Senha (mín. 8, maiúscula, minúscula e número)
             <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={8} />
           </label>
+          <Link className="auth-forgot" to="/recuperar-senha?voltar=/barbeiro/login">
+            Esqueci minha senha
+          </Link>
           {error && <div className="error">{error}</div>}
           <button className="btn" type="submit" disabled={loading}>
             {loading ? 'Aguarde...' : 'Entrar'}
@@ -59,9 +62,6 @@ export default function BarbeiroLoginPage() {
         </form>
         {/* === Links === */}
         <div className="auth-toggle">
-          <div style={{ marginBottom: '0.65rem' }}>
-            <Link to="/recuperar-senha?voltar=/barbeiro/login">Esqueci minha senha</Link>
-          </div>
           <Link to="/auth">Painel da barbearia</Link>
           {' · '}
           <Link to="/portal/login">Sou cliente</Link>

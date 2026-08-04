@@ -90,10 +90,15 @@ export default function PortalLoginPage() {
               </label>
             )
           ) : (
-            <label>
-              Senha (mín. 8, maiúscula, minúscula e número)
-              <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={8} />
-            </label>
+            <>
+              <label>
+                Senha (mín. 8, maiúscula, minúscula e número)
+                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={8} />
+              </label>
+              <Link className="auth-forgot" to="/recuperar-senha?voltar=/portal/login">
+                Esqueci minha senha
+              </Link>
+            </>
           )}
           {otpHint && <p className="subtitle">{otpHint}</p>}
           {error && <div className="error">{error}</div>}
@@ -140,8 +145,6 @@ export default function PortalLoginPage() {
         {/* === Links === */}
         <div className="auth-toggle">
           <Link to="/portal/registro">Criar conta</Link>
-          {' · '}
-          <Link to="/recuperar-senha?voltar=/portal/login">Esqueci minha senha</Link>
           {' · '}
           <Link to="/auth">Sou da barbearia</Link>
           <div style={{ marginTop: '0.65rem' }}>

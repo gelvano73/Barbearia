@@ -58,6 +58,9 @@ export default function RecepcaoLoginPage() {
               minLength={8}
             />
           </label>
+          <Link className="auth-forgot" to="/recuperar-senha?voltar=/recepcao/login">
+            Esqueci minha senha
+          </Link>
           {error && <div className="error">{error}</div>}
           <button className="btn" type="submit" disabled={loading}>
             {loading ? 'Aguarde...' : 'Entrar'}
@@ -65,9 +68,6 @@ export default function RecepcaoLoginPage() {
         </form>
         {/* === Links === */}
         <div className="auth-toggle">
-          <div style={{ marginBottom: '0.65rem' }}>
-            <Link to="/recuperar-senha?voltar=/recepcao/login">Esqueci minha senha</Link>
-          </div>
           <Link to="/auth">Painel admin</Link>
           {' · '}
           <Link to="/barbeiro/login">Sou barbeiro</Link>
