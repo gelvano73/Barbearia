@@ -12,6 +12,7 @@ import java.util.Properties;
 /**
  * SMTP Gmail/Outlook: monta o JavaMailSender com senha sem espaços
  * (Google exibe senha de app com espaços; o SMTP exige 16 caracteres contínuos).
+ * Porta 465 usa SSL direto (mais confiável em hosts que bloqueiam STARTTLS/587).
  */
 @Configuration
 @ConditionalOnProperty(name = "spring.mail.host")
@@ -33,11 +34,19 @@ public class MailSmtpConfig {
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.starttls.required", "true");
-        props.put("mail.smtp.connectiontimeout", "15000");
-        props.put("mail.smtp.timeout", "15000");
-        props.put("mail.smtp.writetimeout", "15000");
+        props.put("mail.smtp.connectiontimeout", "20000");
+        props.put("mail.smtp.timeout", "20000");
+        props.put("mail.smtp.writetimeout", "20000");
+
+        if (port == 465) {
+            props.put("mail.smtp.ssl.enable", "true");
+            props.put("mail.smtp.socketFactory.port", "465");
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.socketFactory.fallback", "false");
+        } else {
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+        }
         return sender;
     }
 }

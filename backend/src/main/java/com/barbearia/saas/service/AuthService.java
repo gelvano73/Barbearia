@@ -329,7 +329,7 @@ public class AuthService {
 
         Usuario usuario;
         try {
-            usuario = buscarPorLogin(request.getLogin());
+            usuario = buscarPorLogin(request.loginOuEmail());
         } catch (NegocioException ex) {
             return RecuperarSenhaResponse.builder()
                     .mensagem(mensagemPadrao)
